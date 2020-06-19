@@ -1,0 +1,79 @@
+version: 2.1
+
+executors:
+  docker-publisher:
+    environment:
+      IMAGE_NAME: memphisx/netcheck-frontend
+    docker:
+      - image: circleci/buildpack-deps:stretch
+
+jobs:
+  build-docker-image:
+    executor: docker-publisher
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: |
+            docker build -t $IMAGE_NAME:latest .
+      - run:
+          name: Archive Docker image
+          command: docker save -o image.tar $IMAGE_NAME
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image.tar
+  publish-latest-docker-image:
+    executor: docker-publisher
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/image.tar
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=`cat version.txt`
+            docker tag $IMAGE_NAME:latest $IMAGE_NAME:$IMAGE_TAG
+            docker push $IMAGE_NAME:latest
+            docker push $IMAGE_NAME:$IMAGE_TAG
+  publish-github-release:
+    docker:
+      - image: circleci/golang
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./artifacts
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            go get github.com/tcnksm/ghr
+            VERSION=`cat ./version.txt`
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+
+workflows:
+  version: 2
+  build-master:
+    jobs:
+      - publish-github-release:
+          filters:
+            branches:
+              only: master
+      - build-docker-image:
+          requires:
+            - publish-github-release
+          filters:
+            branches:
+              only: master
+      - publish-latest-docker-image:
+          requires:
+            - build-docker-image
+          filters:
+            branches:
+              only: master
+
