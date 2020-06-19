@@ -5,7 +5,9 @@ COPY package*.json ./
 RUN yarn global add @quasar/cli
 COPY . .
 # build stage
+ARG backend="https://api.netcheck.bompotis.com"
 FROM develop-stage as build-stage
+ENV BACKEND_URL=$backend
 RUN yarn
 RUN quasar build
 # production stage
