@@ -21,7 +21,7 @@
     "vue-apexcharts": "^1.5.3"
   },
   "devDependencies": {
-    "@quasar/app": "^1.0.0",
+    "@quasar/app": "^2.0.0",
     "@quasar/quasar-app-extension-dotenv": "^1.0.0",
     "babel-eslint": "^10.0.1",
     "dotenv": "^8.2.0",
