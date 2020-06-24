@@ -1083,10 +1083,10 @@
   resolved "https://registry.yarnpkg.com/@quasar/fastclick/-/fastclick-1.1.4.tgz#21ed3e9a4387dcb43022a08af4ef08a5f1abf159"
   integrity sha512-i9wbyV4iT+v4KhtHJynUFhH5LiEPvAEgSnwMqPN4hf/8uRe82nDl5qP5agrp2el1h0HzyBpbvHaW7NB0BPrtvA==
 
-"@quasar/quasar-app-extension-dotenv@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@quasar/quasar-app-extension-dotenv/-/quasar-app-extension-dotenv-1.0.1.tgz#e179b6210a602098887294e6bd159de0dea0bf9d"
-  integrity sha512-WWxmYRGkputmPYnB1+Ia8sKu1YlB/hjuBGDkis27NCWOUUjT+RzKyisWsPqnjWAOz/MLeVTjz7/W/vkP+Fdz5g==
+"@quasar/quasar-app-extension-dotenv@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@quasar/quasar-app-extension-dotenv/-/quasar-app-extension-dotenv-1.0.3.tgz#923cc76f7f719c6e4e5143e650eb4d32b8563aa9"
+  integrity sha512-MyTXNsbuUPDB75UI/be6SkjKMCL/dJZGrB1STNqLCKUMxanPZr6h4ci7sRIWLdLDqDCuH4pi8tEd4m3EFONQBg==
   dependencies:
     dotenv "^8.2.0"
     fs "^0.0.2"
