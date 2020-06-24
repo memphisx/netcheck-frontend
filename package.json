@@ -3,8 +3,6 @@
   "version": "0.0.1",
   "description": "Website Performance and Availability Monitoring",
   "productName": "Netcheck",
-  "cordovaId": "org.cordova.quasar.app",
-  "capacitorId": "",
   "author": "Kyriakos Bompotis <memphisx@gmail.com>",
   "private": true,
   "scripts": {
@@ -12,17 +10,18 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "@quasar/extras": "^1.0.0",
+    "@quasar/extras": "^1.8.2",
     "apexcharts": "^3.19.2",
     "axios": "^0.19.2",
+    "core-js": "^3.0.0",
     "echarts": "^4.8.0",
     "moment": "^2.27.0",
-    "quasar": "^1.0.0",
+    "quasar": "^1.12.8",
     "vue-apexcharts": "^1.5.3"
   },
   "devDependencies": {
-    "@quasar/app": "^1.0.0",
-    "@quasar/quasar-app-extension-dotenv": "^1.0.0",
+    "@quasar/app": "^2.0.0",
+    "@quasar/quasar-app-extension-dotenv": "^1.0.3",
     "babel-eslint": "^10.0.1",
     "dotenv": "^8.2.0",
     "eslint": "^6.8.0",
@@ -32,7 +31,8 @@
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "eslint-plugin-vue": "^6.1.2"
+    "eslint-plugin-vue": "^6.1.2",
+    "workbox-webpack-plugin": "^5.0.0"
   },
   "engines": {
     "node": ">= 10.18.1",
@@ -40,9 +40,14 @@
     "yarn": ">= 1.21.1"
   },
   "browserslist": [
-    "last 1 version, not dead, ie >= 11"
-  ],
-  "resolutions": {
-    "@babel/parser": "7.7.5"
-  }
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ]
 }
