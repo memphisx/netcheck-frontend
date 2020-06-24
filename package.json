@@ -17,7 +17,7 @@
     "axios": "^0.19.2",
     "echarts": "^4.8.0",
     "moment": "^2.27.0",
-    "quasar": "^1.0.0",
+    "quasar": "^1.12.8",
     "vue-apexcharts": "^1.5.3"
   },
   "devDependencies": {
