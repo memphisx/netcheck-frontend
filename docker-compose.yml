@@ -9,7 +9,3 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "80:80"
-
-volumes:
-  db-data:
-    driver: local
