@@ -15,7 +15,7 @@
           NetCheck
         </q-toolbar-title>
 
-        <div>v0.1</div>
+        <div>{{appVersion}}</div>
       </q-toolbar>
     </q-header>
 
@@ -59,6 +59,7 @@ export default {
   data () {
     return {
       leftDrawerOpen: false,
+      appVersion: process.env.VERSION ? `v${process.env.VERSION}` : '',
       navigationLinks: [
         {
           title: 'Domain Check Page',

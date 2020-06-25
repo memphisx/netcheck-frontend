@@ -17,6 +17,8 @@ jobs:
           name: Build Docker image
           command: |
             echo "BACKEND_URL=$BACKEND_URL" > .env
+            IMAGE_TAG=`cat version.txt`
+            echo "VERSION=`cat version.txt`" >> .env
             docker build -t $IMAGE_NAME:latest .
       - run:
           name: Archive Docker image
