@@ -6,9 +6,9 @@
     </div>
 
     <!-- Domain Check information -->
-    <div class="flex">
-      <div class="q-pa-md" style="max-width: 400px" v-for="check in domainDetails.data.httpChecks" :key="check.protocol">
-        <q-list bordered class="rounded-borders shadow-12">
+    <div class="flex flex-center">
+      <div class="q-pa-md" v-for="check in domainDetails.data.httpChecks" :key="check.protocol">
+        <q-list>
           <ProtocolCheck
             :check="check"
             :issuerCertificate="domainDetails.data.issuerCertificate"
@@ -22,7 +22,7 @@
     </div>
 
     <!-- History -->
-    <div v-if="domainIsScheduled" class="flex">
+    <div v-if="domainIsScheduled" class="flex flex-center">
       <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol">
         <q-list bordered class="rounded-borders shadow-12">
           <CheckHistory
@@ -32,22 +32,20 @@
         </q-list>
       </div>
     </div>
-    <div v-else>
-      <div class="flex q-pa-md">
-        <q-list bordered class="rounded-borders shadow-12">
-          <q-card>
-            <q-card-section class="q-pa-none">
-              <div class="text-center text-body1 q-pa-lg">
-                This is not an actively monitored domain. Click the button bellow if you want to save the domain for scheduled checks.
-                <div class="q-pa-lg">
-                  <q-btn color="black" class="full-width " label="Schedule Domain" v-on:click.native="scheduleDomain" v-bind:class="{disabled: scheduledSuccessfully}"
-                         v-bind:disabled="scheduledSuccessfully"/>
-                </div>
+    <div v-else class="flex flex-center q-pa-md">
+      <q-list bordered class="rounded-borders shadow-12">
+        <q-card>
+          <q-card-section class="q-pa-none">
+            <div class="text-center text-body1 q-pa-lg">
+              This is not an actively monitored domain. Click the button bellow if you want to save the domain for scheduled checks.
+              <div class="q-pa-lg">
+                <q-btn color="black" class="full-width " label="Schedule Domain" v-on:click.native="scheduleDomain" v-bind:class="{disabled: scheduledSuccessfully}"
+                       v-bind:disabled="scheduledSuccessfully"/>
               </div>
-            </q-card-section>
-          </q-card>
-        </q-list>
-      </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-list>
     </div>
   </div>
 </template>
