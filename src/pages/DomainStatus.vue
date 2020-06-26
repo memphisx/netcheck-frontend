@@ -22,7 +22,7 @@
     </div>
 
     <!-- History -->
-    <div v-if="domainIsScheduled" class="flex flex-center">
+    <div v-if="domainDetails.data.monitored" class="flex flex-center">
       <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol">
         <q-list bordered class="rounded-borders shadow-12">
           <CheckHistory
@@ -32,7 +32,7 @@
         </q-list>
       </div>
     </div>
-    <div v-else class="flex flex-center q-pa-md">
+    <div v-if="domainDetails.data.monitored === 'false'" class="flex flex-center q-pa-md">
       <q-list bordered class="rounded-borders shadow-12">
         <q-card>
           <q-card-section class="q-pa-none">
@@ -62,9 +62,9 @@ export default {
         'HTTP',
         'HTTPS'
       ],
-      domainIsScheduled: false,
       scheduledSuccessfully: false,
       domainDetails: {
+        monitored: null,
         data: {
           httpChecks: [],
           issuerCertificate: {}
@@ -87,23 +87,6 @@ export default {
           console.error(err)
         })
     },
-    checkIfDomainIsScheduled () {
-      return axios
-        .get(`${process.env.BACKEND_URL}/domains?size=100`)
-        .then(resp => {
-          if (resp.data._embedded && resp.data._embedded.domains && resp.data._embedded.domains.length) {
-            resp.data._embedded.domains.forEach(domain => {
-              if (domain.domain === this.$route.params.domain) {
-                this.scheduledSuccessfully = false
-                this.domainIsScheduled = true
-              }
-            })
-          }
-        })
-        .catch(err => {
-          console.error(err)
-        })
-    },
     fetchDomainStatus () {
       return axios
         .get(`${process.env.BACKEND_URL}/domains/${this.$route.params.domain}`)
@@ -117,7 +100,6 @@ export default {
   },
   mounted () {
     this.$q.loadingBar.start()
-    this.checkIfDomainIsScheduled()
     this.fetchDomainStatus()
     this.$q.loadingBar.stop()
   }
