@@ -47,6 +47,12 @@
                 <q-item-label>{{ toFriendlyDate(check.checkedOn) }}</q-item-label>
               </q-item-section>
             </q-item>
+            <q-item v-if="check.redirectUri">
+              <q-item-section>
+                <q-item-label overline>Redirects To</q-item-label>
+                <q-item-label>{{ check.redirectUri }}</q-item-label>
+              </q-item-section>
+            </q-item>
           </q-list>
         </q-card-section>
       </q-card>
