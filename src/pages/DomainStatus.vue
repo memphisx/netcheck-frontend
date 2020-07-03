@@ -23,16 +23,49 @@
 
     <!-- History -->
     <div v-if="domainDetails.data.monitored" class="flex flex-center">
-      <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol">
+      <!-- Uptime Checks -->
+      <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol + '-performance'">
         <q-list bordered class="rounded-borders shadow-12">
-          <CheckHistory
+          <UptimeChecks
             :protocol="protocol"
             :domain="$route.params.domain"
-          ></CheckHistory>
+          ></UptimeChecks>
+        </q-list>
+      </div>
+
+      <!-- Performance Metrics -->
+      <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol + '-performance'">
+        <q-list bordered class="rounded-borders shadow-12">
+          <Performance
+            :protocol="protocol"
+            :domain="$route.params.domain"
+          ></Performance>
+        </q-list>
+      </div>
+
+      <!-- Status Periods -->
+      <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol + '-state'">
+        <q-list bordered class="rounded-borders shadow-12">
+          <StateHistory
+            :protocol="protocol"
+            :domain="$route.params.domain"
+          ></StateHistory>
+        </q-list>
+      </div>
+
+      <!-- Latest Tests -->
+      <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol + '-check'">
+        <q-list bordered class="rounded-borders shadow-12">
+          <LatestTests
+            :protocol="protocol"
+            :domain="$route.params.domain"
+          ></LatestTests>
         </q-list>
       </div>
     </div>
-    <div v-if="domainDetails.data.monitored === 'false'" class="flex flex-center q-pa-md">
+
+    <!-- Add to Monitored -->
+    <div v-if="domainDetails.data.monitored === false" class="flex flex-center q-pa-md">
       <q-list bordered class="rounded-borders shadow-12">
         <q-card>
           <q-card-section class="q-pa-none">
@@ -52,8 +85,11 @@
 
 <script>
 import ProtocolCheck from 'components/ProtocolCheck'
-import CheckHistory from 'components/CheckHistory'
+import LatestTests from 'components/LatestTests'
 import axios from 'axios'
+import StateHistory from 'components/StateHistory'
+import Performance from 'components/Performance'
+import UptimeChecks from 'components/UptimeChecks'
 export default {
   name: 'WebCheck',
   data () {
@@ -73,8 +109,11 @@ export default {
     }
   },
   components: {
-    CheckHistory,
-    ProtocolCheck
+    UptimeChecks,
+    StateHistory,
+    LatestTests,
+    ProtocolCheck,
+    Performance
   },
   methods: {
     scheduleDomain () {
