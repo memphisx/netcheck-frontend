@@ -110,7 +110,6 @@ export default {
             this.chart.series[0].data = httpChartData.seriesData
 
             this.data = httpChecks
-            this.domainHistoryHttp = httpChecks
             this.loading = false
           }
         })
