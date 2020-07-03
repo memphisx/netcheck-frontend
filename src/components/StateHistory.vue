@@ -4,12 +4,11 @@
     default-opened
     expand-separator
     icon="bar_chart"
-    :label="`Latest ${protocol} Checks`"
+    :label="`${protocol} States`"
     header-class="text-black"
   >
     <q-card>
       <q-card-section class="q-pa-none">
-        <apexchart width="700" type="bar" :options="chart.options" :series="chart.series" :key="JSON.stringify(pagination)"></apexchart>
         <q-table
           :data="data"
           :columns="columns"
@@ -37,17 +36,15 @@
   </div>
 </template>
 <script type="text/javascript">
-import VueApexCharts from 'vue-apexcharts'
 import moment from 'moment'
 import axios from 'axios'
 export default {
   props: ['domain', 'protocol'],
-  components: {
-    apexchart: VueApexCharts
-  },
   data () {
     return {
       filter: '',
+      currentStatus: '',
+      currentStatusStartDate: Date.now(),
       loading: false,
       pagination: {
         sortBy: 'desc',
@@ -58,27 +55,11 @@ export default {
       },
       columns: [
         { name: 'up', label: 'Status', field: 'up', sortable: false, align: 'left', style: 'font-size: 1.5em' },
-        { name: 'checkedOn', label: 'Check date and Time', field: 'checkedOn', sortable: false, format: val => moment(val).format('LLL') },
-        { name: 'statusCode', label: 'Status Code', field: 'statusCode', sortable: false, align: 'center' },
-        { name: 'dnsResolves', label: 'Dns resolved', field: 'dnsResolves', sortable: false, align: 'center', style: 'font-size: 1.5em' },
-        { name: 'ipAddress', label: 'IP Address', field: 'ipAddress', sortable: false },
-        { name: 'responseTimeNs', label: 'Response time', field: 'responseTimeNs', sortable: false, format: val => `${val / 1000000}ms` }
+        { name: 'checkedOn', label: 'Changed on', field: 'checkedOn', sortable: false, format: val => moment(val).format('LLL') },
+        { name: 'reason', label: 'Reason', field: 'reason', sortable: false },
+        { name: 'duration', label: 'Duration', field: 'duration', sortable: false }
       ],
-      data: [],
-      chart: {
-        options: {
-          chart: {
-            id: 'vuechart-http'
-          },
-          xaxis: {
-            categories: []
-          }
-        },
-        series: [{
-          name: 'Response time (ms)',
-          data: []
-        }]
-      }
+      data: []
     }
   },
   methods: {
@@ -89,28 +70,34 @@ export default {
 
       this.loading = true
       return axios
-        .get(`${process.env.BACKEND_URL}/domains/${this.domain}/history?size=${size}&page=${dbPage}`)
+        .get(`${process.env.BACKEND_URL}/domains/${this.domain}/states?protocol=${this.protocol}&size=${size}&page=${dbPage}`)
         .then(resp => {
-          if (resp.data._embedded && resp.data._embedded.domainChecks) {
+          if (resp.data._embedded && resp.data._embedded.states) {
             this.pagination = {
               page: resp.data.page.number + 1,
               rowsPerPage: resp.data.page.size,
               rowsNumber: resp.data.page.totalElements
             }
-            const httpChecks = []
-            resp.data._embedded.domainChecks.forEach(domainCheck => {
-              domainCheck.httpChecks.forEach(httpCheck => {
-                if (httpCheck.protocol === this.protocol) {
-                  httpChecks.push(httpCheck)
-                }
-              })
+            const states = []
+            let counter = 0
+            resp.data._embedded.states.forEach(state => {
+              if (counter === 0 && resp.data.page.number === 0) {
+                this.currentStatus = state.up ? 'UP' : 'DOWN'
+                this.currentStatusStartDate = state.checkedOn
+                states.push({
+                  ...state,
+                  duration: moment.duration(state.durationSeconds, 'seconds').humanize() + ' (ONGOING)'
+                })
+              } else {
+                states.push({
+                  ...state,
+                  duration: moment.duration(state.durationSeconds, 'seconds').humanize()
+                })
+              }
+              counter++
             })
-            const httpChartData = this.generateChartData(httpChecks)
-            this.chart.options.xaxis.categories = httpChartData.categories
-            this.chart.series[0].data = httpChartData.seriesData
 
-            this.data = httpChecks
-            this.domainHistoryHttp = httpChecks
+            this.data = states
             this.loading = false
           }
         })
