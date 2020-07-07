@@ -70,7 +70,7 @@ export default {
 
       this.loading = true
 
-      return http.get(`${process.env.BACKEND_URL}/domains?page=${dbPage}&size=${size}`)
+      return http.get(`/api/domains?page=${dbPage}&size=${size}`)
         .then(resp => {
           if (resp.data._embedded && resp.data._embedded.domains && resp.data._embedded.domains.length) {
             this.pagination = {

@@ -89,7 +89,7 @@ export default {
 
       this.loading = true
       return axios
-        .get(`${process.env.BACKEND_URL}/domains/${this.domain}/history?size=${size}&page=${dbPage}`)
+        .get(`/api/domains/${this.domain}/history?size=${size}&page=${dbPage}`)
         .then(resp => {
           if (resp.data._embedded && resp.data._embedded.domainChecks) {
             this.pagination = {

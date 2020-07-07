@@ -118,7 +118,7 @@ export default {
   methods: {
     scheduleDomain () {
       return axios
-        .put(`${process.env.BACKEND_URL}/domains/${this.$route.params.domain}`)
+        .put(`/api/domains/${this.$route.params.domain}`)
         .then(resp => {
           this.scheduledSuccessfully = true
         })
@@ -128,7 +128,7 @@ export default {
     },
     fetchDomainStatus () {
       return axios
-        .get(`${process.env.BACKEND_URL}/domains/${this.$route.params.domain}`)
+        .get(`/api/domains/${this.$route.params.domain}`)
         .then(resp => {
           this.domainDetails = resp
         })
