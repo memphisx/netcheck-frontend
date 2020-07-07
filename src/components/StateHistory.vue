@@ -70,7 +70,7 @@ export default {
 
       this.loading = true
       return axios
-        .get(`${process.env.BACKEND_URL}/domains/${this.domain}/states?protocol=${this.protocol}&size=${size}&page=${dbPage}`)
+        .get(`/api/domains/${this.domain}/states?protocol=${this.protocol}&size=${size}&page=${dbPage}`)
         .then(resp => {
           if (resp.data._embedded && resp.data._embedded.states) {
             this.pagination = {
