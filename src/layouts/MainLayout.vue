@@ -72,6 +72,12 @@ export default {
           caption: 'check all domains currently monitored',
           icon: 'view_list',
           link: '/domains'
+        },
+        {
+          title: 'Info',
+          caption: 'About WebCheck',
+          icon: 'info',
+          link: '/info'
         }
       ]
     }
