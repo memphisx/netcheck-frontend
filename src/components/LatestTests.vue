@@ -1,39 +1,27 @@
 <template>
   <div>
-    <q-expansion-item
-    default-opened
-    expand-separator
-    icon="bar_chart"
-    :label="`Latest ${protocol} Checks`"
-    header-class="text-black"
-  >
-    <q-card>
-      <q-card-section class="q-pa-none">
-        <apexchart width="700" type="bar" :options="chart.options" :series="chart.series" :key="JSON.stringify(pagination)"></apexchart>
-        <q-table
-          :data="data"
-          :columns="columns"
-          row-key="id"
-          :pagination.sync="pagination"
-          :loading="loading"
-          @request="fetchDomainHistory"
-        >
-          <template v-slot:body-cell-up="cellProperties">
-            <q-td :props="cellProperties" >
-              <q-icon v-if="cellProperties.value" class="text-green" name="check_circle" />
-              <q-icon v-else class="text-red" name="cancel"/>
-            </q-td>
-          </template>
-          <template v-slot:body-cell-dnsResolves="cellProperties">
-            <q-td :props="cellProperties" >
-              <q-icon v-if="cellProperties.value" class="text-green" name="check_circle" />
-              <q-icon v-else class="text-red" name="cancel"/>
-            </q-td>
-          </template>
-        </q-table>
-      </q-card-section>
-    </q-card>
-  </q-expansion-item>
+    <apexchart height="300" type="bar" :options="chart.options" :series="chart.series" :key="JSON.stringify(pagination)"></apexchart>
+    <q-table
+      :data="data"
+      :columns="columns"
+      row-key="id"
+      :pagination.sync="pagination"
+      :loading="loading"
+      @request="fetchDomainHistory"
+    >
+      <template v-slot:body-cell-up="cellProperties">
+        <q-td :props="cellProperties" >
+          <q-icon v-if="cellProperties.value" class="text-green" name="check_circle" />
+          <q-icon v-else class="text-red" name="cancel"/>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-dnsResolves="cellProperties">
+        <q-td :props="cellProperties" >
+          <q-icon v-if="cellProperties.value" class="text-green" name="check_circle" />
+          <q-icon v-else class="text-red" name="cancel"/>
+        </q-td>
+      </template>
+    </q-table>
   </div>
 </template>
 <script type="text/javascript">

@@ -1,33 +1,29 @@
 <template>
-  <div>
-    <q-expansion-item
-    default-opened
-    expand-separator
-    icon="bar_chart"
-    :label="`${protocol} Uptime Checks`"
-    header-class="text-black"
-  >
-    <q-card>
-      <q-card-section class="q-pa-none">
-        <q-table
-          :data="data"
-          :columns="columns"
-          row-key="id"
-          :pagination.sync="pagination"
-          :loading="loading"
-          @request="fetchDomainHistory"
-        >
-        </q-table>
-      </q-card-section>
-    </q-card>
-  </q-expansion-item>
+  <div class="flex flex-center">
+    <div class="q-pa-md">
+      <apexChart type="radialBar" :options="chart.options" :series="chart.series" :key="JSON.stringify(pagination)"></apexChart>
+    </div>
+    <div class="q-pa-md">
+      <q-table
+        :data="data"
+        :columns="columns"
+        row-key="id"
+        :pagination.sync="pagination"
+        :loading="loading"
+        @request="fetchDomainHistory"
+      />
+    </div>
   </div>
 </template>
 <script type="text/javascript">
 import axios from 'axios'
 import moment from 'moment'
+import VueApexCharts from 'vue-apexcharts'
 export default {
   props: ['domain', 'protocol'],
+  components: {
+    apexChart: VueApexCharts
+  },
   data () {
     return {
       filter: '',
@@ -45,7 +41,57 @@ export default {
         { name: 'checks', label: 'Checks', field: 'checks', sortable: false },
         { name: 'uptime', label: 'Uptime', field: 'uptime', sortable: false, format: val => `${val}%` }
       ],
-      data: []
+      data: [],
+      chart: {
+        options: {
+          series: [],
+          colors: ['#20E647'],
+          plotOptions: {
+            radialBar: {
+              hollow: {
+                margin: 0,
+                size: '70%',
+                background: '#293450'
+              },
+              track: {
+                dropShadow: {
+                  enabled: true,
+                  top: 2,
+                  left: 0,
+                  blur: 4,
+                  opacity: 0.15
+                }
+              },
+              dataLabels: {
+                name: {
+                  offsetY: -10,
+                  color: '#fff',
+                  fontSize: '13px'
+                },
+                value: {
+                  color: '#fff',
+                  fontSize: '30px',
+                  show: true
+                }
+              }
+            }
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shade: 'dark',
+              type: 'vertical',
+              gradientToColors: ['#87D4F9'],
+              stops: [0, 100]
+            }
+          },
+          stroke: {
+            lineCap: 'round'
+          },
+          labels: ['Uptime']
+        },
+        series: []
+      }
     }
   },
   methods: {
@@ -65,12 +111,19 @@ export default {
               rowsNumber: resp.data.page.totalElements
             }
             const result = []
-            resp.data._embedded.metrics.forEach(metric => result.push({
-              date: metric.metricPeriodStart,
-              checks: metric.totalChecks,
-              uptime: (metric.successfulChecks * 100) / metric.totalChecks
-            }))
+            let totalChecks = 0
+            let totalSuccessfulChecks = 0
+            resp.data._embedded.metrics.forEach(metric => {
+              result.push({
+                date: metric.metricPeriodStart,
+                checks: metric.totalChecks,
+                uptime: (metric.successfulChecks * 100) / metric.totalChecks
+              })
+              totalChecks += metric.totalChecks
+              totalSuccessfulChecks += metric.successfulChecks
+            })
             this.data = result
+            this.chart.series = [(totalSuccessfulChecks * 100) / totalChecks]
             this.loading = false
           }
         })
