@@ -1,10 +1,5 @@
 <template>
   <div>
-    <!-- Domain -->
-    <div class="text-center text-h4 q-pa-lg">
-      {{ $route.params.domain }}
-    </div>
-
     <!-- Domain Check information -->
     <div class="flex flex-center">
       <div class="q-pa-md" v-for="check in domainDetails.data.httpChecks" :key="check.protocol">
@@ -20,50 +15,111 @@
         </q-list>
       </div>
     </div>
+    <div v-if="domainDetails.data.monitored">
+      <q-tabs
+        v-model="tab"
+        class="text-grey"
+        active-color="primary"
+        indicator-color="primary"
+      >
+        <q-tab name="http" label="HTTP" />
+        <q-tab name="https" label="HTTPS" />
+      </q-tabs>
 
-    <!-- History -->
-    <div v-if="domainDetails.data.monitored" class="flex flex-center">
-      <!-- Uptime Checks -->
-      <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol + '-performance'">
-        <q-list bordered class="rounded-borders shadow-12">
-          <UptimeChecks
-            :protocol="protocol"
-            :domain="$route.params.domain"
-          ></UptimeChecks>
-        </q-list>
-      </div>
+      <q-tab-panels v-model="tab">
+        <q-tab-panel name="http">
+          <q-splitter v-model="splitterModel">
+            <template v-slot:before>
+              <q-tabs v-model="httpInnerTab" swipeable vertical>
+                <q-tab name="performance" icon="speed" label="Performance" />
+                <q-tab name="uptimeChecks" icon="update" label="Uptime" />
+                <q-tab name="states" icon="dns" label="States" />
+                <q-tab name="latestChecks" icon="bar_chart" label="Checks" />
+              </q-tabs>
+            </template>
 
-      <!-- Performance Metrics -->
-      <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol + '-performance'">
-        <q-list bordered class="rounded-borders shadow-12">
-          <Performance
-            :protocol="protocol"
-            :domain="$route.params.domain"
-          ></Performance>
-        </q-list>
-      </div>
+            <template v-slot:after>
+              <q-tab-panels v-model="httpInnerTab">
+                <q-tab-panel name="performance">
+                  <Performance
+                    protocol="HTTP"
+                    :domain="$route.params.domain"
+                  ></Performance>
+                </q-tab-panel>
 
-      <!-- Status Periods -->
-      <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol + '-state'">
-        <q-list bordered class="rounded-borders shadow-12">
-          <StateHistory
-            :protocol="protocol"
-            :domain="$route.params.domain"
-          ></StateHistory>
-        </q-list>
-      </div>
+                <q-tab-panel name="uptimeChecks">
+                  <UptimeChecks
+                    protocol="HTTP"
+                    :domain="$route.params.domain"
+                  ></UptimeChecks>
+                </q-tab-panel>
 
-      <!-- Latest Tests -->
-      <div class="q-pa-md" v-for="protocol in protocolsToCheck" :key="protocol + '-check'">
-        <q-list bordered class="rounded-borders shadow-12">
-          <LatestTests
-            :protocol="protocol"
-            :domain="$route.params.domain"
-          ></LatestTests>
-        </q-list>
-      </div>
+                <q-tab-panel name="states">
+                  <StateHistory
+                    protocol="HTTP"
+                    :domain="$route.params.domain"
+                  ></StateHistory>
+                </q-tab-panel>
+
+                <q-tab-panel name="latestChecks">
+                  <LatestTests
+                    protocol="HTTP"
+                    :domain="$route.params.domain"
+                  ></LatestTests>
+                </q-tab-panel>
+              </q-tab-panels>
+            </template>
+
+          </q-splitter>
+        </q-tab-panel>
+
+        <q-tab-panel name="https">
+          <q-splitter v-model="splitterModel">
+            <template v-slot:before>
+              <q-tabs v-model="httpsInnerTab" vertical>
+                <q-tab name="performance" icon="speed" label="Performance" />
+                <q-tab name="uptimeChecks" icon="update" label="Uptime" />
+                <q-tab name="states" icon="dns" label="States" />
+                <q-tab name="latestChecks" icon="bar_chart" label="Checks" />
+              </q-tabs>
+            </template>
+
+            <template v-slot:after>
+              <q-tab-panels v-model="httpsInnerTab">
+                <q-tab-panel name="performance">
+                  <Performance
+                    protocol="HTTPS"
+                    :domain="$route.params.domain"
+                  ></Performance>
+                </q-tab-panel>
+
+                <q-tab-panel name="uptimeChecks">
+                  <UptimeChecks
+                    protocol="HTTPS"
+                    :domain="$route.params.domain"
+                  ></UptimeChecks>
+                </q-tab-panel>
+
+                <q-tab-panel name="states">
+                  <StateHistory
+                    protocol="HTTPS"
+                    :domain="$route.params.domain"
+                  ></StateHistory>
+                </q-tab-panel>
+
+                <q-tab-panel name="latestChecks">
+                  <LatestTests
+                    protocol="HTTPS"
+                    :domain="$route.params.domain"
+                  ></LatestTests>
+                </q-tab-panel>
+              </q-tab-panels>
+            </template>
+
+          </q-splitter>
+        </q-tab-panel>
+      </q-tab-panels>
     </div>
-
     <!-- Add to Monitored -->
     <div v-if="domainDetails.data.monitored === false" class="flex flex-center q-pa-md">
       <q-list bordered class="rounded-borders shadow-12">
@@ -91,9 +147,13 @@ import StateHistory from 'components/StateHistory'
 import Performance from 'components/Performance'
 import UptimeChecks from 'components/UptimeChecks'
 export default {
-  name: 'WebCheck',
+  name: 'DomainStatus',
   data () {
     return {
+      tab: 'http',
+      httpInnerTab: 'performance',
+      httpsInnerTab: 'performance',
+      splitterModel: 5,
       protocolsToCheck: [
         'HTTP',
         'HTTPS'

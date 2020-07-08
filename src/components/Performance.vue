@@ -1,27 +1,15 @@
 <template>
   <div>
-    <q-expansion-item
-    default-opened
-    expand-separator
-    icon="bar_chart"
-    :label="`${protocol} Performance`"
-    header-class="text-black"
-  >
-    <q-card>
-      <q-card-section class="q-pa-none">
-        <apexchart width="700" type="line" :options="chart.options" :series="chart.series" :key="JSON.stringify(pagination)"></apexchart>
-        <q-table
-          :data="data"
-          :columns="columns"
-          row-key="id"
-          :pagination.sync="pagination"
-          :loading="loading"
-          @request="fetchDomainHistory"
-        >
-        </q-table>
-      </q-card-section>
-    </q-card>
-  </q-expansion-item>
+    <apexChart height="400" type="area" :options="chart.options" :series="chart.series" :key="JSON.stringify(pagination)"></apexChart>
+    <q-table
+      :data="data"
+      :columns="columns"
+      row-key="id"
+      :pagination.sync="pagination"
+      :loading="loading"
+      hide-header
+      @request="fetchDomainHistory"
+    />
   </div>
 </template>
 <script type="text/javascript">
@@ -31,7 +19,7 @@ import axios from 'axios'
 export default {
   props: ['domain', 'protocol'],
   components: {
-    apexchart: VueApexCharts
+    apexChart: VueApexCharts
   },
   data () {
     return {
@@ -42,14 +30,17 @@ export default {
         sortBy: 'desc',
         descending: false,
         page: 1,
-        rowsPerPage: 100,
-        rowsNumber: 0
+        rowsPerPage: 24,
+        rowsNumber: 0,
+        totalPages: 0
       },
-      columns: [
-      ],
+      columns: [],
       data: [],
       chart: {
         options: {
+          tooltip: {
+            theme: 'dark'
+          },
           chart: {
             id: 'vuechart-metrics-http'
           },
@@ -88,7 +79,8 @@ export default {
             this.pagination = {
               page: resp.data.page.number + 1,
               rowsPerPage: resp.data.page.size,
-              rowsNumber: resp.data.page.totalElements
+              rowsNumber: resp.data.page.totalElements,
+              totalPages: resp.data.page.totalPages
             }
             const httpChartData = this.generateChartData(resp.data._embedded.metrics)
             this.chart.options.xaxis.categories = httpChartData.categories

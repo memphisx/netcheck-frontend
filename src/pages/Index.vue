@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <div class="flex flex-center q-py-xl">
-      <img alt="Quasar logo" src="~assets/netcheck-logo.png">
+      <q-img alt="NetCheck logo" src="~assets/netcheck-logo.png" style="width: 100%; max-width: 700px" />
     </div>
     <div class="flex flex-center">
       <q-input borderless bottom-slots @keydown.enter.prevent="submit()" ref="domain" v-model="domainName" label="https://">
@@ -13,7 +13,7 @@
         </template>
 
         <template v-slot:hint>
-          Enter your domain to check
+          Enter the domain you want to check
         </template>
       </q-input>
     </div>
@@ -22,7 +22,7 @@
 
 <script>
 export default {
-  name: 'WebCheck',
+  name: 'NetCheck',
   data () {
     return {
       domainName: ''

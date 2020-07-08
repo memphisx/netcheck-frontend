@@ -15,15 +15,15 @@
           NetCheck
         </q-toolbar-title>
 
-        <div>{{appVersion}}</div>
+        <div>
+          Dark Mode <q-toggle @input="this.toggleDarkMode" v-model="darkMode" />
+        </div>
       </q-toolbar>
     </q-header>
 
     <q-drawer
       v-model="leftDrawerOpen"
-      show-if-above
       bordered
-      content-class="bg-grey-1"
     >
       <q-list>
         <q-item-label
@@ -59,7 +59,7 @@ export default {
   data () {
     return {
       leftDrawerOpen: false,
-      appVersion: process.env.VERSION ? `v${process.env.VERSION}` : '',
+      darkMode: false,
       navigationLinks: [
         {
           title: 'Domain Check Page',
@@ -72,8 +72,20 @@ export default {
           caption: 'check all domains currently monitored',
           icon: 'view_list',
           link: '/domains'
+        },
+        {
+          title: 'Info',
+          caption: 'About WebCheck',
+          icon: 'info',
+          link: '/info'
         }
       ]
+    }
+  },
+  methods: {
+    toggleDarkMode () {
+      this.$q.dark.toggle()
+      this.darkMode = this.$q.dark.isActive
     }
   }
 }
