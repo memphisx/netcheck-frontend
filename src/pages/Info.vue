@@ -19,6 +19,9 @@
       <p>Source: <a href="https://github.com/memphisx/netcheck-api">Backend</a> -- <a href="https://github.com/memphisx/netcheck-frontend">Frontend UI</a></p>
     </div>
     <div class="flex flex-center">
+      <p><a href="/docs/v1/">OpenAPI docs</a></p>
+    </div>
+    <div class="flex flex-center">
       <p>Built using <a href="https://spring.io/">Spring</a> and <a href="https://quasar.dev/">Quasar</a> Frameworks</p>
     </div>
     <div class="flex flex-center">
