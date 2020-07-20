@@ -55,22 +55,22 @@ export default {
       data: []
     }
   },
-  mounted () {
+  async mounted () {
     // get initial data from server (1st page)
-    this.getDomains({
+    await this.getDomains({
       pagination: this.pagination,
       rowsPerPage: 3
     })
   },
   methods: {
-    getDomains (props) {
+    async getDomains (props) {
       const { page, rowsPerPage } = props.pagination
       const size = rowsPerPage
       const dbPage = page - 1
 
       this.loading = true
 
-      return http.get(`/api/domains?page=${dbPage}&size=${size}`)
+      return http.get(`/api/v1/domains?page=${dbPage}&size=${size}`)
         .then(resp => {
           if (resp.data._embedded && resp.data._embedded.domains && resp.data._embedded.domains.length) {
             this.pagination = {
@@ -81,7 +81,7 @@ export default {
             const domains = []
             resp.data._embedded.domains.forEach(domain => {
               const lastChecks = {}
-              domain.lastDomainCheckModel.httpChecks.forEach(httpCheck => {
+              domain.lastChecks.httpChecks.forEach(httpCheck => {
                 if (httpCheck.protocol === 'HTTPS') {
                   lastChecks.lastHttpsStatus = httpCheck.up
                   lastChecks.lastHttpsCheck = moment(httpCheck.checkedOn).format('LLLL')
