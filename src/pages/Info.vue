@@ -124,7 +124,7 @@ export default {
   },
   methods: {
     getHealthStatus () {
-      return http.get('/api/actuator/health')
+      return http.get('/api/v1/actuator/health')
         .then(resp => {
           this.healthData = [{
             title: 'Backend Status',
@@ -154,7 +154,7 @@ export default {
         })
     },
     getInfo () {
-      return http.get('/api/actuator/info')
+      return http.get('/api/v1/actuator/info')
         .then(resp => {
           this.infoData = [{
             title: 'Backend app name',
@@ -190,7 +190,7 @@ export default {
         })
     },
     getCPULoadAverage () {
-      return http.get('/api/actuator/metrics/system.load.average.1m')
+      return http.get('/api/v1/actuator/metrics/system.load.average.1m')
         .then(resp => {
           this.metrics.push({
             title: 'Average System Load (1m)',
@@ -200,7 +200,7 @@ export default {
         })
     },
     getHttpServerRequests () {
-      return http.get('/api/actuator/metrics/http.server.requests')
+      return http.get('/api/v1/actuator/metrics/http.server.requests')
         .then(resp => {
           resp.data.measurements.forEach(measurement => {
             this.metrics.push({
@@ -211,7 +211,7 @@ export default {
         })
     },
     getActiveDbConnections () {
-      return http.get('/api/actuator/metrics/jdbc.connections.active')
+      return http.get('/api/v1/actuator/metrics/jdbc.connections.active')
         .then(resp => {
           this.metrics.push({
             title: 'Active DB connections',
@@ -221,7 +221,7 @@ export default {
         })
     },
     getUptime () {
-      return http.get('/api/actuator/metrics/process.uptime')
+      return http.get('/api/v1/actuator/metrics/process.uptime')
         .then(resp => {
           this.metrics.push({
             title: `Uptime (${resp.data.baseUnit})`,
