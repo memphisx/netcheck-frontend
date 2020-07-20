@@ -14,10 +14,12 @@
     "apexcharts": "^3.19.2",
     "axios": "^0.19.2",
     "core-js": "^3.0.0",
+    "countup.js": "^2.0.5",
     "echarts": "^4.8.0",
     "moment": "^2.27.0",
     "quasar": "^1.12.8",
-    "vue-apexcharts": "^1.5.3"
+    "vue-apexcharts": "^1.5.3",
+    "vue-countup-v2": "^4.0.0"
   },
   "devDependencies": {
     "@quasar/app": "^2.0.0",

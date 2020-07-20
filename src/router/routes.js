@@ -27,6 +27,13 @@ const routes = [
     children: [
       { path: '', component: () => import('pages/DomainStatus.vue') }
     ]
+  },
+  {
+    path: '/check/:domain',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/DomainCheck.vue') }
+    ]
   }
 ]
 

@@ -16,7 +16,8 @@
         </q-toolbar-title>
 
         <div>
-          Dark Mode <q-toggle @input="this.toggleDarkMode" v-model="darkMode" />
+          <q-toggle @input="this.toggleDarkMode" v-model="darkMode" />
+          <q-icon name="bedtime" class="text-white" style="font-size: 1.5rem;" />
         </div>
       </q-toolbar>
     </q-header>
@@ -69,7 +70,7 @@ export default {
         },
         {
           title: 'Monitored Domains',
-          caption: 'check all domains currently monitored',
+          caption: 'Check all domains currently monitored',
           icon: 'view_list',
           link: '/domains'
         },

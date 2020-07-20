@@ -70,14 +70,14 @@ export default {
     }
   },
   methods: {
-    fetchDomainHistory (props) {
+    async fetchDomainHistory (props) {
       const { page, rowsPerPage } = props.pagination
       const size = rowsPerPage
       const dbPage = page - 1
 
       this.loading = true
       return axios
-        .get(`/api/domains/${this.domain}/history?size=${size}&page=${dbPage}`)
+        .get(`/api/v1/domains/${this.domain}/history?size=${size}&page=${dbPage}`)
         .then(resp => {
           if (resp.data._embedded && resp.data._embedded.domainChecks) {
             this.pagination = {
@@ -110,17 +110,19 @@ export default {
       const categories = []
       const seriesData = []
       checks.forEach(check => {
-        categories.push(moment(check.checkedOn).format('hh:mm'))
+        categories.push(moment(check.checkedOn).format('HH:mm'))
         seriesData.push(Math.round(check.responseTimeNs / 1000000))
       })
+      categories.reverse()
+      seriesData.reverse()
       return {
         categories,
         seriesData
       }
     }
   },
-  mounted () {
-    this.fetchDomainHistory({
+  async mounted () {
+    await this.fetchDomainHistory({
       pagination: this.pagination,
       rowsPerPage: 3
     })

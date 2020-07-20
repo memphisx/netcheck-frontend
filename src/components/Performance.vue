@@ -66,14 +66,14 @@ export default {
     }
   },
   methods: {
-    fetchDomainHistory (props) {
+    async fetchDomainHistory (props) {
       const { page, rowsPerPage } = props.pagination
       const size = rowsPerPage
       const dbPage = page - 1
 
       this.loading = true
       return axios
-        .get(`/api/domains/${this.domain}/metrics?protocol=${this.protocol}&period=${this.period}&size=${size}&page=${dbPage}`)
+        .get(`/api/v1/domains/${this.domain}/metrics?protocol=${this.protocol}&period=${this.period}&size=${size}&page=${dbPage}`)
         .then(resp => {
           if (resp.data._embedded && resp.data._embedded.metrics) {
             this.pagination = {
@@ -97,12 +97,13 @@ export default {
         })
     },
     generateChartData (metrics) {
+      metrics.reverse()
       const categories = []
       const averageSeriesData = []
       const worstSeriesData = []
       const bestSeriesData = []
       metrics.forEach(metric => {
-        categories.push(moment(metric.metricPeriodStart).format('hh:mm'))
+        categories.push(moment(metric.metricPeriodStart).format('HH:mm'))
         averageSeriesData.push(Math.round(metric.averageResponseTime / 1000000))
         worstSeriesData.push(Math.round(metric.maxResponseTime / 1000000))
         bestSeriesData.push(Math.round(metric.minResponseTime / 1000000))
@@ -115,8 +116,8 @@ export default {
       }
     }
   },
-  mounted () {
-    this.fetchDomainHistory({
+  async mounted () {
+    await this.fetchDomainHistory({
       pagination: this.pagination,
       rowsPerPage: 3
     })

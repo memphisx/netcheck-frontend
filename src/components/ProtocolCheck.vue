@@ -1,20 +1,13 @@
 <template>
-  <div>
-    <q-expansion-item
-      class="shadow-1 overflow-hidden"
-      style="border-radius: 30px"
-      icon="explore"
-      :header-class="check.up ? 'bg-green-7 text-white' : 'bg-negative text-white'"
-      expand-icon-class="text-white"
-      caption="Protocol Accessibility info"
-      >
-      <template v-slot:header>
+  <div class="q-pa-md row items-start q-gutter-md">
+    <q-card class="round-top-corners" flat bordered shadow-12>
+      <q-item :class="check.up ? 'bg-green-7 text-white' : 'bg-negative text-white'">
         <q-item-section avatar>
-          <q-avatar :icon="check.protocol === 'HTTP' ? 'find_in_page' : 'policy'" :color="check.up ? 'green-7 text-white' : 'negative text-white'" text-color="white" />
+          <q-avatar icon="policy" color="bg-green-7 text-white" text-color="white" />
         </q-item-section>
 
         <q-item-section>
-          {{ check.protocol }}
+          <q-item-label>{{ check.protocol }}</q-item-label>
         </q-item-section>
 
         <q-item-section side>
@@ -22,47 +15,82 @@
             <q-icon :name="check.up ? 'check' : 'close'" color="white" size="24px" />
           </div>
         </q-item-section>
-      </template>
-      <q-card>
-        <q-card-section>
-          <q-list separator>
-            <q-item>
-              <q-item-section>
-                <q-item-label overline>Status code</q-item-label>
-                <q-item-label>{{ check.statusCode }}</q-item-label>
-              </q-item-section>
-              <q-item-section side middle>
-                <q-icon :name="check.up ? 'check_circle' : 'cancel'" :color="check.up ? 'green' : 'red'" />
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-item-label overline>Response Time</q-item-label>
-                <q-item-label>{{ convertNanoToMili(check.responseTimeNs) }} ms</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-item-label overline>Checked On</q-item-label>
-                <q-item-label>{{ toFriendlyDate(check.checkedOn) }}</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item v-if="check.redirectUri">
-              <q-item-section>
-                <q-item-label overline>Redirects To</q-item-label>
-                <q-item-label>{{ check.redirectUri }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-      </q-card>
+      </q-item>
+
+      <q-card-section>
+        <div class="text-overline text-orange-9">{{ check.protocol.toLowerCase() }}://{{ $route.params.domain }}</div>
+        <div v-if="check.up === true">
+          <div  class="text-h5 q-mt-sm q-mb-xs">Up and Running</div>
+          <div class="text-caption text-grey">
+            Website is accessible from here through a {{ check.protocol === 'HTTP' ? 'non' : '' }} secure connection
+          </div>
+          <div v-if="check.redirectUri" class="text-caption text-grey">
+            It currently redirects to {{check.redirectUri}}
+          </div>
+          <div v-if="check.statusCode" class="text-caption text-grey">
+            We got a {{ check.statusCode }} status code in {{ convertNanoToSeconds(check.responseTimeNs).toFixed(3) }} seconds
+          </div>
+        </div>
+        <div v-if="check.up === false">
+          <div  class="text-h5 q-mt-sm q-mb-xs">Down</div>
+          <div class="text-caption text-grey">
+            Website seems to be down from here through a {{ check.protocol === 'HTTP' ? 'non' : '' }} secure connection
+          </div>
+          <div v-if="check.redirectUri" class="text-caption text-grey">
+            It currently redirects to {{check.redirectUri}}
+          </div>
+          <div v-if="check.statusCode" class="text-caption text-grey">
+            We got a {{ check.statusCode }} status code in {{ convertNanoToSeconds(check.responseTimeNs).toFixed(3) }} seconds
+          </div>
+        </div>
+      </q-card-section>
+      <q-separator />
+      <q-expansion-item
+        default-closed
+        expand-separator
+        label="Summary"
+        icon="info"
+      >
+        <q-card>
+          <q-card-section>
+            <q-list separator>
+              <q-item>
+                <q-item-section>
+                  <q-item-label overline>Status code</q-item-label>
+                  <q-item-label>{{ check.statusCode }}</q-item-label>
+                </q-item-section>
+                <q-item-section side middle>
+                  <q-icon :name="check.up ? 'check_circle' : 'cancel'" :color="check.up ? 'green' : 'red'" />
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label overline>Response Time</q-item-label>
+                  <q-item-label>{{ convertNanoToMili(check.responseTimeNs) }} ms</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label overline>Checked On</q-item-label>
+                  <q-item-label>{{ toFriendlyDate(check.checkedOn) }}</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item v-if="check.redirectUri">
+                <q-item-section>
+                  <q-item-label overline>Redirects To</q-item-label>
+                  <q-item-label>{{ check.redirectUri }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
       <!-- Certificate -->
       <q-expansion-item
         default-closed
         expand-separator
         icon="security"
         label="Certificate"
-        header-class="text-black"
         v-if="check.protocol === 'HTTPS'"
       >
         <q-card v-if="issuerCertificate">
@@ -165,7 +193,7 @@
           </q-card-section>
         </q-card>
       </q-expansion-item>
-    </q-expansion-item>
+    </q-card>
   </div>
 </template>
 <script type="text/javascript">
@@ -178,7 +206,21 @@ export default {
     },
     convertNanoToMili (nanoseconds) {
       return nanoseconds / 1000000
+    },
+    convertNanoToSeconds (nanoseconds) {
+      return nanoseconds / 1000000000
     }
   }
 }
 </script>
+<style lang="sass" scoped>
+  .round-corners
+    width: 100%
+    max-width: 350px
+    border-radius: 30px
+  .round-top-corners
+    width: 100%
+    max-width: 350px
+    border-top-left-radius: 30px
+    border-top-right-radius: 30px
+</style>
