@@ -105,7 +105,7 @@ export default {
           console.error(err)
         })
     },
-    async generateChartData (checks) {
+    generateChartData (checks) {
       const moment = require('moment')
       const categories = []
       const seriesData = []
