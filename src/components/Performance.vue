@@ -97,12 +97,13 @@ export default {
         })
     },
     generateChartData (metrics) {
+      metrics.reverse()
       const categories = []
       const averageSeriesData = []
       const worstSeriesData = []
       const bestSeriesData = []
       metrics.forEach(metric => {
-        categories.push(moment(metric.metricPeriodStart).format('hh:mm'))
+        categories.push(moment(metric.metricPeriodStart).format('HH:mm'))
         averageSeriesData.push(Math.round(metric.averageResponseTime / 1000000))
         worstSeriesData.push(Math.round(metric.maxResponseTime / 1000000))
         bestSeriesData.push(Math.round(metric.minResponseTime / 1000000))

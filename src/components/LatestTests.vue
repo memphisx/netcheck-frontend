@@ -110,9 +110,11 @@ export default {
       const categories = []
       const seriesData = []
       checks.forEach(check => {
-        categories.push(moment(check.checkedOn).format('hh:mm'))
+        categories.push(moment(check.checkedOn).format('HH:mm'))
         seriesData.push(Math.round(check.responseTimeNs / 1000000))
       })
+      categories.reverse()
+      seriesData.reverse()
       return {
         categories,
         seriesData
