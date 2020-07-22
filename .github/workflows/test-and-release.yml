@@ -33,9 +33,15 @@ jobs:
       - name: Install dependencies
         run: yarn install
       - name: Install Quasar globally
-        run: yarn global add @quasar/cli
+        run: npm install -g @quasar/cli
       - name: Build and package to zip
-        run: echo "VERSION=`cat version.txt`" >> .env && quasar build && mkdir zip && cd dist/spa/ && zip -r ../../zip/release.zip .
+        run: |
+          echo "VERSION=`cat version.txt`" >> .env
+          quasar build
+          mkdir zip
+          cd dist/spa/
+          zip -r ../../zip/release.zip .
+          cd ../../
       - name: Setup go
         uses: actions/setup-go@v1
         with:
