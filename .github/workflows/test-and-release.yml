@@ -16,6 +16,29 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install dependencies and run tests
+      - name: Install dependencies
         run: yarn install
-      - run: yarn test
+      - name: Run tests
+        run: yarn test
+
+  release:
+    name: Publish Github Release
+    runs-on: ubuntu-latest
+    container: golang
+    needs: unit-tests
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+      - name: Use joshstrange/setup-quasar
+        uses: joshstrange/setup-quasar@v1
+      - name: Install dependencies
+        run: yarn
+      - name: Build and package to zip
+        run: echo "VERSION=`cat version.txt`" >> .env && quasar build && mkdir zip && cd dist/spa/ && zip -r ../../zip/release.zip .
+      - name: Publish Release on GitHub
+        run: |
+          go get github.com/tcnksm/ghr
+          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${{ github.event.repository.name }} -c ${GITHUB_SHA} -delete `cat ./version.txt` ./zip/
