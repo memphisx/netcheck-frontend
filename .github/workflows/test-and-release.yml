@@ -48,5 +48,5 @@ jobs:
           go-version: 1.14
       - name: Publish Release on GitHub
         run: |
-          go get github.com/tcnksm/ghr
+          go get -u -v github.com/tcnksm/ghr
           ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${{ github.event.repository.name }} -c ${GITHUB_SHA} -delete `cat ./version.txt` ./zip/
