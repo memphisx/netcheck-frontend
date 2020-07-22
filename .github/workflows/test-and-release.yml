@@ -30,12 +30,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
-      - name: Install Quasar globally
-        run: yarn global add @quasar/cli
-      - name: Install dependencies
-        run: yarn
-      - name: Build and package to zip
-        run: echo "VERSION=`cat version.txt`" >> .env && quasar build && mkdir zip && cd dist/spa/ && zip -r ../../zip/release.zip .
+      - name: Install deps, build and package to zip
+        run: yarn global add @quasar/cli && yarn && echo "VERSION=`cat version.txt`" >> .env && quasar build && mkdir zip && cd dist/spa/ && zip -r ../../zip/release.zip .
       - name: Setup go
         uses: actions/setup-go@v1
         with:
