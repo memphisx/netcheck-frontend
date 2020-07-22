@@ -59,6 +59,18 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1.4.2
+      - name: Install dependencies
+        run: yarn install
+      - name: Install Quasar globally
+        run: npm install -g @quasar/cli
+      - name: Build and package to zip
+        run: |
+          echo "VERSION=`cat version.txt`" >> .env
+          quasar build
+      - name: Replace dockerfile
+        run: rm ./Dockerfile && mv ./nginx.Dockerfile ./Dockerfile
       - name: install buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
