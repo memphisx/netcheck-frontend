@@ -69,5 +69,5 @@ jobs:
       - name: build the image
         run: |
           echo "VERSION=`cat version.txt`" >> .env
-          docker buildx build --push --tag ${{ secrets.DOCKER_IMAGE_NAME }}:latest --tag ${{ secrets.DOCKER_IMAGE_NAME }}:`cat ./version.txt` --platform linux/amd64,linux/i386,linux/arm/v7,linux/arm/v8,linux/arm64 .
+          docker buildx build --push --tag ${{ secrets.DOCKER_IMAGE_NAME }}:latest --tag ${{ secrets.DOCKER_IMAGE_NAME }}:`cat ./version.txt` --platform linux/amd64,linux/x86,linux/arm/v7,linux/arm/v8,linux/arm64 .
 
