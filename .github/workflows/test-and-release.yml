@@ -49,4 +49,5 @@ jobs:
       - name: Publish Release on GitHub
         run: |
           go get -u -v github.com/tcnksm/ghr
-          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${{ github.event.repository.name }} -c ${GITHUB_SHA} -delete `cat ./version.txt` ./zip/
+          ls /home/runner/go
+          /home/runner/go/github.com/tcnksm/ghr/ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${{ github.event.repository.name }} -c ${GITHUB_SHA} -delete `cat ./version.txt` ./zip/
