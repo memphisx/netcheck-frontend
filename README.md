@@ -17,7 +17,7 @@
     </a>
     <img alt="GitHub issues by-label" src="https://img.shields.io/github/issues/memphisx/netcheck-frontend/bug?style=for-the-badge">
     <a href="https://github.com/memphisx/netcheck-frontend/actions">
-        <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/memphisx/netcheck-frontend/Run%20Unit%20Tests?style=for-the-badge">
+        <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/memphisx/netcheck-frontend/Test%20and%20release?style=for-the-badge">
     </a>
     <a href="https://github.com/memphisx/netcheck-frontend/stargazers">
         <img alt="GitHub stars" src="https://img.shields.io/github/stars/memphisx/netcheck-frontend?style=for-the-badge">
@@ -33,7 +33,7 @@
 
 <br>
 
-<h1 align="center">Selfhosted performance & availability monitoring app</h1>
+<h1 align="center">Performance & availability monitoring app</h1>
 <h3 align="center">Built on Spring Boot & Quasar Frameworks</h3>
 <h3 align="center"><a href="https://demo.ncheck.eu" target="_blank">Check out the demo</a></h3>
 
@@ -42,6 +42,20 @@
 Netcheck lets you monitor the availability and performance of your websites or web services by running on your own
 servers/machines or hosting providers of your preference.
 It is inspired by services like [Pingdom](https://www.pingdom.com) and [Statuscake](https://www.statuscake.com)
+
+<p align="center">
+    Main page
+    <img alt="Main page" src="https://github.com/memphisx/netcheck-frontend/raw/develop/preview-images/main-view.png">
+    <br/><br/>
+    Live check (Dark mode on)
+    <img alt="Live check" src="https://github.com/memphisx/netcheck-frontend/raw/develop/preview-images/live-check-view.png">
+    <br/><br/>
+    Performance of monitored websites (Dark mode on)
+    <img alt="Performance of monitored domains" src="https://github.com/memphisx/netcheck-frontend/raw/develop/preview-images/monitored-view.png">
+    <br/><br/>
+    States of a monitored domain (Dark mode on)
+    <img alt="States of monitored domain" src="https://github.com/memphisx/netcheck-frontend/raw/develop/preview-images/state-view.png">
+</p>
 
 This git repository is for the frontend/ui side of the app. The backend api is required to run before running the frontend.
 Please follow the instructions on the [Netcheck API Repository](https://github.com/memphisx/netcheck-api) beforehand.
