@@ -1,13 +1,10 @@
 on: [push]
+name: Test and release
 
 jobs:
   unit-tests:
     name: Run Unit Tests
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [10.x, 12.x]
 
     steps:
       - name: Check out repository code
@@ -15,7 +12,7 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 12.x
       - name: Install dependencies
         run: yarn install
       - name: Run tests
