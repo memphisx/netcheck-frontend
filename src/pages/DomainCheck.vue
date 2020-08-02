@@ -44,7 +44,7 @@
 
 <script>
 import ProtocolCheck from 'components/ProtocolCheck'
-import axios from 'axios'
+import netcheck from '../libs/netcheck-client'
 import InfoCard from 'components/InfoCard'
 export default {
   name: 'DomainStatus',
@@ -71,14 +71,10 @@ export default {
   },
   methods: {
     async fetchDomainStatus () {
-      return axios
-        .get(`/api/v1/check/${this.$route.params.domain}`)
-        .then(resp => {
-          this.domainDetails = resp.data
-        })
-        .catch(err => {
-          console.error(err)
-        })
+      const resp = await netcheck().check({ domain: this.$route.params.domain })
+      if (resp.success) {
+        this.domainDetails = resp.data
+      }
     }
   },
   async mounted () {

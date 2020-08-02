@@ -1,22 +1,24 @@
 <template>
   <div class="flex flex-center">
-    <div class="q-pa-md">
+    <div class="self-start">
       <apexChart type="radialBar" :options="chart.options" :series="chart.series" :key="JSON.stringify(pagination)"></apexChart>
     </div>
-    <div class="q-pa-md">
+    <div>
       <q-table
         :data="data"
         :columns="columns"
         row-key="id"
         :pagination.sync="pagination"
         :loading="loading"
-        @request="fetchDomainHistory"
+        @request="fetchUptimeChecks"
+        :rows-per-page-options="rowsPerPageOptions"
+        rows-per-page-label="Metrics per page"
       />
     </div>
   </div>
 </template>
 <script type="text/javascript">
-import axios from 'axios'
+import netcheck from '../libs/netcheck-client'
 import moment from 'moment'
 import VueApexCharts from 'vue-apexcharts'
 export default {
@@ -29,6 +31,7 @@ export default {
       filter: '',
       period: 'HOUR',
       loading: false,
+      rowsPerPageOptions: [24, 48, 72, 96, 120, 144, 168],
       pagination: {
         sortBy: 'desc',
         descending: false,
@@ -95,58 +98,59 @@ export default {
     }
   },
   methods: {
-    async fetchDomainHistory (props) {
+    async fetchUptimeChecks (props) {
       const { page, rowsPerPage } = props.pagination
       const size = rowsPerPage
       const dbPage = page - 1
 
       this.loading = true
-      return axios
-        .get(`/api/v1/domains/${this.domain}/metrics?protocol=${this.protocol}&period=${this.period}&size=${size}&page=${dbPage}`)
-        .then(resp => {
-          if (resp.data._embedded && resp.data._embedded.metrics) {
-            this.pagination = {
-              page: resp.data.page.number + 1,
-              rowsPerPage: resp.data.page.size,
-              rowsNumber: resp.data.page.totalElements
-            }
-            const result = []
-            let totalChecks = 0
-            let totalSuccessfulChecks = 0
-            resp.data._embedded.metrics.forEach(metric => {
-              result.push({
-                date: metric.metricPeriodStart,
-                checks: metric.totalChecks,
-                uptime: ((metric.successfulChecks * 100) / metric.totalChecks).toFixed(2)
-              })
-              totalChecks += metric.totalChecks
-              totalSuccessfulChecks += metric.successfulChecks
-            })
-            this.data = result
-            this.chart.series = [((totalSuccessfulChecks * 100) / totalChecks).toFixed(2)]
-            this.loading = false
-          }
+      const resp = await netcheck().domainMetrics({
+        domain: this.domain,
+        protocol: this.protocol,
+        period: this.period,
+        size,
+        page: dbPage
+      })
+      if (resp.success && resp.data._embedded && resp.data._embedded.metrics) {
+        this.pagination = {
+          page: resp.data.page.number + 1,
+          rowsPerPage: resp.data.page.size,
+          rowsNumber: resp.data.page.totalElements
+        }
+        const result = []
+        let totalChecks = 0
+        let totalSuccessfulChecks = 0
+        resp.data._embedded.metrics.forEach(metric => {
+          result.push({
+            date: metric.metricPeriodStart,
+            checks: metric.totalChecks,
+            uptime: ((metric.successfulChecks * 100) / metric.totalChecks).toFixed(2)
+          })
+          totalChecks += metric.totalChecks
+          totalSuccessfulChecks += metric.successfulChecks
         })
-        .catch(err => {
-          console.error(err)
-        })
+        this.data = result
+        this.chart.series = [((totalSuccessfulChecks * 100) / totalChecks).toFixed(2)]
+      }
+      this.loading = false
     },
     formatDate (date) {
-      if (this.period === 'HOUR') {
-        return moment(date).format('DD MMM hh:mm')
-      } else if (this.period === 'DAY') {
-        return moment(date).format('MMM DD')
-      } else if (this.period === 'WEEK') {
-        return moment(date).format('YYYY WW')
-      } else if (this.period === 'MONTH') {
-        return moment(date).format('YYYY MMM')
-      } else {
-        return moment(date).format('LLL')
+      switch (this.period) {
+        case 'HOUR':
+          return moment(date).format('DD MMM hh:mm')
+        case 'DAY':
+          return moment(date).format('MMM DD')
+        case 'WEEK':
+          return moment(date).format('YYYY WW')
+        case 'MONTH':
+          return moment(date).format('YYYY MMM')
+        default:
+          return moment(date).format('LLL')
       }
     }
   },
   async mounted () {
-    await this.fetchDomainHistory({
+    await this.fetchUptimeChecks({
       pagination: this.pagination,
       rowsPerPage: 3
     })

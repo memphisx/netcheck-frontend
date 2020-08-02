@@ -8,9 +8,11 @@
       :pagination.sync="pagination"
       :loading="loading"
       @request="getDomains"
+      :rows-per-page-options="[5,10,15,20,25,50,100]"
+      rows-per-page-label="Domains per page"
     >
       <template v-slot:body-cell-domain="cellProperties">
-        <q-td :props="cellProperties" >
+        <q-td :props="cellProperties" class="clickable">
           <span @click="$router.push('/domains/'+ cellProperties.value)">{{ cellProperties.value }}</span>
         </q-td>
       </template>
@@ -30,8 +32,8 @@
   </div>
 </template>
 <script>
-const http = require('axios')
-const moment = require('moment')
+import netcheck from '../libs/netcheck-client'
+import moment from 'moment'
 export default {
   data () {
     return {
@@ -47,6 +49,7 @@ export default {
       columns: [
         { name: 'domain', align: 'left', label: 'Domain', field: 'domain', sortable: false },
         { name: 'dateAdded', label: 'Date Added', field: 'dateAdded', sortable: false },
+        { name: 'frequency', label: 'Check Frequency (minutes)', field: 'frequency', sortable: false },
         { name: 'lastHttpStatus', label: 'Last Http Status', field: 'lastHttpStatus', sortable: false, align: 'center', style: 'font-size: 1.5em' },
         { name: 'lastHttpsStatus', label: 'Last Https Status', field: 'lastHttpsStatus', sortable: false, align: 'center', style: 'font-size: 1.5em' },
         { name: 'lastHttpCheck', label: 'Last Http Check', field: 'lastHttpCheck', sortable: false },
@@ -70,41 +73,37 @@ export default {
 
       this.loading = true
 
-      return http.get(`/api/v1/domains?page=${dbPage}&size=${size}`)
-        .then(resp => {
-          if (resp.data._embedded && resp.data._embedded.domains && resp.data._embedded.domains.length) {
-            this.pagination = {
-              page: resp.data.page.number + 1,
-              rowsPerPage: resp.data.page.size,
-              rowsNumber: resp.data.page.totalElements
-            }
-            const domains = []
-            resp.data._embedded.domains.forEach(domain => {
-              const lastChecks = {}
-              domain.lastChecks.httpChecks.forEach(httpCheck => {
-                if (httpCheck.protocol === 'HTTPS') {
-                  lastChecks.lastHttpsStatus = httpCheck.up
-                  lastChecks.lastHttpsCheck = moment(httpCheck.checkedOn).format('LLLL')
-                } else {
-                  lastChecks.lastHttpStatus = httpCheck.up
-                  lastChecks.lastHttpCheck = moment(httpCheck.checkedOn).format('LLLL')
-                }
-              })
-              domains.push({
-                domain: domain.domain,
-                dateAdded: moment(domain.dateAdded).format('LLLL'),
-                ...lastChecks
-              })
-            })
-            this.data = domains
-
-            this.loading = false
+      const resp = await netcheck().domains({ page: dbPage, size })
+      if (resp.success) {
+        if (resp.data._embedded && resp.data._embedded.domains && resp.data._embedded.domains.length) {
+          this.pagination = {
+            page: resp.data.page.number + 1,
+            rowsPerPage: resp.data.page.size,
+            rowsNumber: resp.data.page.totalElements
           }
-        })
-        .catch(err => {
-          console.error(err)
-          this.loading = false
-        })
+          const domains = []
+          resp.data._embedded.domains.forEach(domain => {
+            const lastChecks = {}
+            domain.lastChecks.httpChecks.forEach(httpCheck => {
+              if (httpCheck.protocol === 'HTTPS') {
+                lastChecks.lastHttpsStatus = httpCheck.up
+                lastChecks.lastHttpsCheck = moment(httpCheck.checkedOn).format('LLLL')
+              } else {
+                lastChecks.lastHttpStatus = httpCheck.up
+                lastChecks.lastHttpCheck = moment(httpCheck.checkedOn).format('LLLL')
+              }
+            })
+            domains.push({
+              domain: domain.domain,
+              frequency: domain.checkFrequencyMinutes,
+              dateAdded: moment(domain.dateAdded).format('LLLL'),
+              ...lastChecks
+            })
+          })
+          this.data = domains
+        }
+      }
+      this.loading = false
     }
   }
 }

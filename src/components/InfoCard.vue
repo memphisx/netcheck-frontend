@@ -69,7 +69,7 @@
   </div>
 </template>
 <script type="text/javascript">
-import axios from 'axios'
+import netcheck from '../libs/netcheck-client'
 import moment from 'moment'
 export default {
   props: ['overline', 'monitored'],
@@ -77,30 +77,20 @@ export default {
     toFriendlyDate (dateTime) {
       return moment(dateTime).format('LLL')
     },
-    scheduleDomain () {
-      return axios
-        .put(`/api/v1/domains/${this.$route.params.domain}`)
-        .then(() => {
-          this.scheduledSuccessfully = true
-        })
-        .catch(err => {
-          console.error(err)
-        })
+    async scheduleDomain () {
+      const resp = await netcheck().scheduleDomain({ domain: this.$route.params.domain })
+      this.scheduledSuccessfully = resp.success
     },
-    getDomainConfigAndLastChecks () {
-      return axios
-        .get(`/api/v1/domains/${this.$route.params.domain}`)
-        .then(resp => {
-          this.scheduledSuccessfully = true
-          this.domainConfig = {
-            domain: resp.data.domain,
-            dateAdded: resp.data.dateAdded,
-            checkFrequency: resp.data.checkFrequencyMinutes
-          }
-        })
-        .catch(err => {
-          console.error(err)
-        })
+    async getDomainConfigAndLastChecks () {
+      const resp = await netcheck().domainStatus({ domain: this.$route.params.domain })
+      if (resp.success) {
+        this.scheduledSuccessfully = true
+        this.domainConfig = {
+          domain: resp.data.domain,
+          dateAdded: resp.data.dateAdded,
+          checkFrequency: resp.data.checkFrequencyMinutes
+        }
+      }
     },
     gotoMonitoring () {
       this.$router.push(`/domains/${this.$route.params.domain}`)

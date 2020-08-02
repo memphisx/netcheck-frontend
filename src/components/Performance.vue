@@ -9,13 +9,15 @@
       :loading="loading"
       hide-header
       @request="fetchDomainHistory"
+      :rows-per-page-options="rowsPerPageOptions"
+      rows-per-page-label="Metrics per page"
     />
   </div>
 </template>
 <script type="text/javascript">
 import VueApexCharts from 'vue-apexcharts'
 import moment from 'moment'
-import axios from 'axios'
+import netcheck from '../libs/netcheck-client'
 export default {
   props: ['domain', 'protocol'],
   components: {
@@ -26,6 +28,7 @@ export default {
       filter: '',
       period: 'HOUR',
       loading: false,
+      rowsPerPageOptions: [24, 48, 72, 96, 120, 144, 168],
       pagination: {
         sortBy: 'desc',
         descending: false,
@@ -72,29 +75,31 @@ export default {
       const dbPage = page - 1
 
       this.loading = true
-      return axios
-        .get(`/api/v1/domains/${this.domain}/metrics?protocol=${this.protocol}&period=${this.period}&size=${size}&page=${dbPage}`)
-        .then(resp => {
-          if (resp.data._embedded && resp.data._embedded.metrics) {
-            this.pagination = {
-              page: resp.data.page.number + 1,
-              rowsPerPage: resp.data.page.size,
-              rowsNumber: resp.data.page.totalElements,
-              totalPages: resp.data.page.totalPages
-            }
-            const httpChartData = this.generateChartData(resp.data._embedded.metrics)
-            this.chart.options.xaxis.categories = httpChartData.categories
-            this.chart.series[0].data = httpChartData.worstSeriesData
-            this.chart.series[1].data = httpChartData.averageSeriesData
-            this.chart.series[2].data = httpChartData.bestSeriesData
-
-            this.data = resp.data._embedded.metrics
-            this.loading = false
+      const resp = await netcheck().domainMetrics({
+        domain: this.domain,
+        protocol: this.protocol,
+        period: this.period,
+        size,
+        page: dbPage
+      })
+      if (resp.success) {
+        if (resp.data._embedded && resp.data._embedded.metrics) {
+          this.pagination = {
+            page: resp.data.page.number + 1,
+            rowsPerPage: resp.data.page.size,
+            rowsNumber: resp.data.page.totalElements,
+            totalPages: resp.data.page.totalPages
           }
-        })
-        .catch(err => {
-          console.error(err)
-        })
+          const httpChartData = this.generateChartData(resp.data._embedded.metrics)
+          this.chart.options.xaxis.categories = httpChartData.categories
+          this.chart.series[0].data = httpChartData.worstSeriesData
+          this.chart.series[1].data = httpChartData.averageSeriesData
+          this.chart.series[2].data = httpChartData.bestSeriesData
+
+          this.data = resp.data._embedded.metrics
+        }
+        this.loading = false
+      }
     },
     generateChartData (metrics) {
       metrics.reverse()
