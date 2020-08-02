@@ -25,7 +25,7 @@
 </template>
 <script type="text/javascript">
 import moment from 'moment'
-import axios from 'axios'
+import netcheck from '../libs/netcheck-client'
 export default {
   props: ['domain', 'protocol'],
   data () {
@@ -57,41 +57,39 @@ export default {
       const dbPage = page - 1
 
       this.loading = true
-      return axios
-        .get(`/api/v1/domains/${this.domain}/states?protocol=${this.protocol}&size=${size}&page=${dbPage}`)
-        .then(resp => {
-          if (resp.data._embedded && resp.data._embedded.states) {
-            this.pagination = {
-              page: resp.data.page.number + 1,
-              rowsPerPage: resp.data.page.size,
-              rowsNumber: resp.data.page.totalElements
-            }
-            const states = []
-            let counter = 0
-            resp.data._embedded.states.forEach(state => {
-              if (counter === 0 && resp.data.page.number === 0) {
-                this.currentStatus = state.up ? 'UP' : 'DOWN'
-                this.currentStatusStartDate = state.checkedOn
-                states.push({
-                  ...state,
-                  duration: moment.duration(state.durationSeconds, 'seconds').humanize() + ' (ONGOING)'
-                })
-              } else {
-                states.push({
-                  ...state,
-                  duration: moment.duration(state.durationSeconds, 'seconds').humanize()
-                })
-              }
-              counter++
+      const resp = await netcheck().domainStates({
+        domain: this.domain,
+        protocol: this.protocol,
+        size,
+        page: dbPage
+      })
+      if (resp.success && resp.data._embedded && resp.data._embedded.states) {
+        this.pagination = {
+          page: resp.data.page.number + 1,
+          rowsPerPage: resp.data.page.size,
+          rowsNumber: resp.data.page.totalElements
+        }
+        const states = []
+        let counter = 0
+        resp.data._embedded.states.forEach(state => {
+          if (counter === 0 && resp.data.page.number === 0) {
+            this.currentStatus = state.up ? 'UP' : 'DOWN'
+            this.currentStatusStartDate = state.checkedOn
+            states.push({
+              ...state,
+              duration: moment.duration(state.durationSeconds, 'seconds').humanize() + ' (ONGOING)'
             })
-
-            this.data = states
-            this.loading = false
+          } else {
+            states.push({
+              ...state,
+              duration: moment.duration(state.durationSeconds, 'seconds').humanize()
+            })
           }
+          counter++
         })
-        .catch(err => {
-          console.error(err)
-        })
+        this.data = states
+      }
+      this.loading = false
     },
     generateChartData (checks) {
       const moment = require('moment')

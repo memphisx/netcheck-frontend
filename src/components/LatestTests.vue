@@ -8,6 +8,8 @@
       :pagination.sync="pagination"
       :loading="loading"
       @request="fetchDomainHistory"
+      :rows-per-page-options="[5,10,15,20,25,50,100]"
+      rows-per-page-label="Checks per page"
     >
       <template v-slot:body-cell-up="cellProperties">
         <q-td :props="cellProperties" >
@@ -27,7 +29,7 @@
 <script type="text/javascript">
 import VueApexCharts from 'vue-apexcharts'
 import moment from 'moment'
-import axios from 'axios'
+import netcheck from '../libs/netcheck-client'
 export default {
   props: ['domain', 'protocol'],
   components: {
@@ -76,34 +78,30 @@ export default {
       const dbPage = page - 1
 
       this.loading = true
-      return axios
-        .get(`/api/v1/domains/${this.domain}/history?size=${size}&page=${dbPage}`)
-        .then(resp => {
-          if (resp.data._embedded && resp.data._embedded.domainChecks) {
-            this.pagination = {
-              page: resp.data.page.number + 1,
-              rowsPerPage: resp.data.page.size,
-              rowsNumber: resp.data.page.totalElements
-            }
-            const httpChecks = []
-            resp.data._embedded.domainChecks.forEach(domainCheck => {
-              domainCheck.httpChecks.forEach(httpCheck => {
-                if (httpCheck.protocol === this.protocol) {
-                  httpChecks.push(httpCheck)
-                }
-              })
-            })
-            const httpChartData = this.generateChartData(httpChecks)
-            this.chart.options.xaxis.categories = httpChartData.categories
-            this.chart.series[0].data = httpChartData.seriesData
-
-            this.data = httpChecks
-            this.loading = false
+      const resp = await netcheck().domainHistory({ domain: this.domain, page: dbPage, size })
+      if (resp.success) {
+        if (resp.data._embedded && resp.data._embedded.domainChecks) {
+          this.pagination = {
+            page: resp.data.page.number + 1,
+            rowsPerPage: resp.data.page.size,
+            rowsNumber: resp.data.page.totalElements
           }
-        })
-        .catch(err => {
-          console.error(err)
-        })
+          const httpChecks = []
+          resp.data._embedded.domainChecks.forEach(domainCheck => {
+            domainCheck.httpChecks.forEach(httpCheck => {
+              if (httpCheck.protocol === this.protocol) {
+                httpChecks.push(httpCheck)
+              }
+            })
+          })
+          const httpChartData = this.generateChartData(httpChecks)
+          this.chart.options.xaxis.categories = httpChartData.categories
+          this.chart.series[0].data = httpChartData.seriesData
+
+          this.data = httpChecks
+        }
+      }
+      this.loading = false
     },
     generateChartData (checks) {
       const moment = require('moment')
