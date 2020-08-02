@@ -25,7 +25,7 @@ const routes = [
     path: '/domains/:domain',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/DomainStatus.vue') }
+      { name: 'domain-view', path: '', component: () => import('pages/DomainStatus.vue') }
     ]
   },
   {
