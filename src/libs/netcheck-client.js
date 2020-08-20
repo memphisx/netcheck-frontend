@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 export default () => {
-  const handleGetRequest = (url) => {
+  const handleGetRequest = async (url) => {
     return axios.get(url).then(resp => {
       return {
         data: resp.data,
@@ -9,6 +9,7 @@ export default () => {
         status: resp.status
       }
     }).catch(err => {
+      console.error(err)
       return {
         error: err,
         data: err.response.data,
@@ -17,7 +18,7 @@ export default () => {
       }
     })
   }
-  const handlePutRequest = (url) => {
+  const handlePutRequest = async (url) => {
     return axios.put(url).then(resp => {
       return {
         data: resp.data,

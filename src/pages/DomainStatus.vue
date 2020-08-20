@@ -154,9 +154,18 @@ export default {
     calculateNextCheck () {
       return moment(this.checkedOn).add(this.checkFrequency, 'minutes').add(1, 'seconds')
     },
+    calculateVeryNextCheck () {
+      return moment(this.checkedOn).add(this.checkFrequency * 2, 'minutes').add(1, 'seconds')
+    },
     calculateNextCheckInSeconds () {
       const now = moment(Date.now())
       const nextCheck = moment(this.calculateNextCheck())
+      const diff = nextCheck.diff(now)
+      return moment.duration(diff).asSeconds()
+    },
+    calculateVeryNextCheckInSeconds () {
+      const now = moment(Date.now())
+      const nextCheck = moment(this.calculateVeryNextCheck())
       const diff = nextCheck.diff(now)
       return moment.duration(diff).asSeconds()
     },
@@ -291,16 +300,25 @@ export default {
       const resp = await netcheck().todaysDomainMetrics({ domain: this.$route.params.domain, protocol })
       if (resp.success) {
         const metric = resp.data._embedded.metrics[0]
-        const uptimePercentage = (metric.successfulChecks === metric.totalChecks) ? 100 : ((metric.successfulChecks * 100) / metric.totalChecks)
+        const calculateUptimePercentage = () => {
+          if (metric.totalChecks === 0) {
+            return -1
+          } else if (metric.successfulChecks === metric.totalChecks) {
+            return 100
+          } else {
+            return (metric.successfulChecks * 100) / metric.totalChecks
+          }
+        }
+        const uptimePercentage = calculateUptimePercentage()
         const avgResponseTime = (metric.averageResponseTime / 1000000000).toFixed(3)
         this.cards[protocol].todaysUptime = {
           cardClass: (uptimePercentage > 90) ? 'round-corners bg-green' : 'round-corners bg-red',
           description: 'Today\'s Uptime',
           icon: 'backup',
-          value: uptimePercentage,
+          value: (uptimePercentage !== -1) ? uptimePercentage : 'Unknown',
           decimalPlaces: (metric.successfulChecks === metric.totalChecks) ? 0 : 2,
-          suffix: '%',
-          type: 'countUp',
+          suffix: uptimePercentage !== -1 ? '%' : undefined,
+          type: uptimePercentage !== -1 ? 'countUp' : undefined,
           dialogInfo: {
             title: 'Last 24 Hours Uptime',
             data: [
@@ -361,23 +379,32 @@ export default {
     },
     async pollNewData (scope) {
       let updatedOnTime = false
-      while (!updatedOnTime) {
+      let backendError = false
+      let retries = 0
+      while (!updatedOnTime && (retries < 3)) {
         console.log('Refreshing Data')
+        console.log(`Check ${retries + 1}`)
         await scope.fetchDomainStatus()
         for (const protocol of scope.protocolsToCheck) {
           await scope.fetchLastHourMetrics(protocol)
         }
         const duration = scope.calculateNextCheckInSeconds()
         updatedOnTime = duration > 0
-        console.log('Duration until next check')
-        console.log(duration)
-        if (!updatedOnTime) {
+        backendError = scope.calculateVeryNextCheckInSeconds() < 0
+        console.log('Duration until next check', duration)
+        console.log('2 checks should have happened by now?', backendError)
+        if (backendError) {
+          console.warn('No update for a really long time.')
+          break
+        } else if (!updatedOnTime) {
+          console.log('Waiting for 2 seconds until next retry')
           await new Promise(resolve => setTimeout(resolve, 2000))
-          console.log('Waited for 2 seconds')
+          retries++
         } else {
           console.log('Updated as expected on time')
         }
       }
+      return updatedOnTime && (retries < 3)
     }
   },
   computed: {
@@ -393,7 +420,7 @@ export default {
       await this.$router.replace({ name: 'domain-view', query: { protocol: value.protocol.toUpperCase(), details: value.details } })
     }
   },
-  async mounted () {
+  async created () {
     if (this.$router.currentRoute.query.protocol && (this.$router.currentRoute.query.protocol === 'HTTP' || this.$router.currentRoute.query.protocol === 'HTTPS')) {
       this.tab = this.$router.currentRoute.query.protocol
     }
@@ -406,16 +433,20 @@ export default {
       this.httpInnerTab = this.$router.currentRoute.query.details
     }
     this.loading = true
-    await this.pollNewData(this)
+    const result = await this.pollNewData(this)
     this.loading = false
-    const nextRefreshInSeconds = this.calculateNextCheckInSeconds()
-    console.log(`Data will refresh in ${nextRefreshInSeconds} seconds`)
-    await new Promise(resolve => setTimeout(resolve, nextRefreshInSeconds * 1000))
-    const self = this
-    await this.pollNewData(self)
-    console.log('Data refreshed')
-    console.log('Setting up scheduled refreshes')
-    this.scheduledTasks.push(setInterval(async () => this.pollNewData(self), this.checkFrequency * 60 * 1000))
+    if (result === true) {
+      const nextRefreshInSeconds = this.calculateNextCheckInSeconds()
+      console.log(`Data will refresh in ${nextRefreshInSeconds} seconds`)
+      await new Promise(resolve => setTimeout(resolve, nextRefreshInSeconds * 1000))
+      const self = this
+      await this.pollNewData(self)
+      console.log('Data refreshed')
+      console.log('Setting up scheduled refreshes')
+      this.scheduledTasks.push(setInterval(async () => this.pollNewData(self), this.checkFrequency * 60 * 1000))
+    } else {
+      console.log('Something went wrong with the backend scheduler - Skipping scheduled frontend updates')
+    }
   },
   async beforeDestroy () {
     await this.scheduledTasks.forEach((task) => {
