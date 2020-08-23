@@ -16,8 +16,7 @@
         </q-toolbar-title>
 
         <div>
-          <q-toggle @input="this.toggleDarkMode" v-model="darkMode" />
-          <q-icon name="bedtime" class="text-white" style="font-size: 1.5rem;" />
+          <q-toggle @input="this.toggleDarkMode" v-model="darkMode" icon="bedtime"/>
         </div>
       </q-toolbar>
     </q-header>

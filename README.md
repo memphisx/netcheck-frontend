@@ -50,7 +50,10 @@ It is inspired by services like [Pingdom](https://www.pingdom.com) and [Statusca
     Live check (Dark mode on)
     <img alt="Live check" src="https://github.com/memphisx/netcheck-frontend/raw/develop/preview-images/live-check-view.png">
     <br/><br/>
-    Performance of monitored websites (Dark mode on)
+    List of monitored websites (Dark mode on)
+    <img alt="Performance of monitored domains" src="https://github.com/memphisx/netcheck-frontend/raw/develop/preview-images/monitored-list-view.png">
+    <br/><br/>
+    Performance of a monitored website (Dark mode on)
     <img alt="Performance of monitored domains" src="https://github.com/memphisx/netcheck-frontend/raw/develop/preview-images/monitored-view.png">
     <br/><br/>
     States of a monitored domain (Dark mode on)
