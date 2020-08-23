@@ -1,7 +1,6 @@
 <template>
-  <div class="q-pa-md">
+  <q-page>
     <q-table
-      title="Monitored Domains"
       :data="data"
       :columns="columns"
       row-key="id"
@@ -10,35 +9,36 @@
       @request="getDomains"
       :rows-per-page-options="[5,10,15,20,25,50,100]"
       rows-per-page-label="Domains per page"
+      grid
     >
-      <template v-slot:body-cell-domain="cellProperties">
-        <q-td :props="cellProperties" class="clickable">
-          <span @click="$router.push('/domains/'+ cellProperties.value)">{{ cellProperties.value }}</span>
-        </q-td>
+      <template v-slot:top>
+        <div class="col-2 q-table__title">Monitored Domains</div>
+        <q-space />
+        <q-toggle v-model="expanded" icon="unfold_more" class="q-mb-md" />
       </template>
-      <template v-slot:body-cell-lastHttpStatus="cellProperties">
-        <q-td :props="cellProperties" >
-          <q-icon v-if="cellProperties.value" class="text-green" name="check_circle" />
-          <q-icon v-else class="text-red" name="cancel"/>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-lastHttpsStatus="cellProperties">
-        <q-td :props="cellProperties" >
-          <q-icon v-if="cellProperties.value" class="text-green" name="check_circle" />
-          <q-icon v-else class="text-red" name="cancel"/>
-        </q-td>
+      <template v-slot:item="props">
+        <DomainCard
+          :data="props"
+          :key="props.row.domain"
+          :expanded="expanded"
+        />
       </template>
     </q-table>
-  </div>
+  </q-page>
 </template>
 <script>
 import netcheck from '../libs/netcheck-client'
 import moment from 'moment'
+import DomainCard from 'components/DomainCard'
 export default {
+  components: {
+    DomainCard
+  },
   data () {
     return {
       filter: '',
       loading: false,
+      expanded: true,
       pagination: {
         sortBy: 'desc',
         descending: false,
@@ -49,11 +49,7 @@ export default {
       columns: [
         { name: 'domain', align: 'left', label: 'Domain', field: 'domain', sortable: false },
         { name: 'dateAdded', label: 'Date Added', field: 'dateAdded', sortable: false },
-        { name: 'frequency', label: 'Check Frequency (minutes)', field: 'frequency', sortable: false },
-        { name: 'lastHttpStatus', label: 'Last Http Status', field: 'lastHttpStatus', sortable: false, align: 'center', style: 'font-size: 1.5em' },
-        { name: 'lastHttpsStatus', label: 'Last Https Status', field: 'lastHttpsStatus', sortable: false, align: 'center', style: 'font-size: 1.5em' },
-        { name: 'lastHttpCheck', label: 'Last Http Check', field: 'lastHttpCheck', sortable: false },
-        { name: 'lastHttpsCheck', label: 'Last Https Check', field: 'lastHttpsCheck', sortable: false }
+        { name: 'frequency', label: 'Check Frequency (minutes)', field: 'frequency', sortable: false }
       ],
       data: []
     }
@@ -83,21 +79,10 @@ export default {
           }
           const domains = []
           resp.data._embedded.domains.forEach(domain => {
-            const lastChecks = {}
-            domain.lastChecks.httpChecks.forEach(httpCheck => {
-              if (httpCheck.protocol === 'HTTPS') {
-                lastChecks.lastHttpsStatus = httpCheck.up
-                lastChecks.lastHttpsCheck = moment(httpCheck.checkedOn).format('LLLL')
-              } else {
-                lastChecks.lastHttpStatus = httpCheck.up
-                lastChecks.lastHttpCheck = moment(httpCheck.checkedOn).format('LLLL')
-              }
-            })
             domains.push({
               domain: domain.domain,
               frequency: domain.checkFrequencyMinutes,
-              dateAdded: moment(domain.dateAdded).format('LLLL'),
-              ...lastChecks
+              dateAdded: moment(domain.dateAdded).format('LLLL')
             })
           })
           this.data = domains
@@ -108,3 +93,7 @@ export default {
   }
 }
 </script>
+<style lang="sass">
+  .q-table__grid-content
+    justify-content: center
+</style>

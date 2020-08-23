@@ -25,16 +25,15 @@
       <p>Built using <a href="https://spring.io/">Spring</a> and <a href="https://quasar.dev/">Quasar</a> Frameworks</p>
     </div>
     <div class="flex flex-center">
-      <!--Experimenting-->
       <div class="q-pa-md">
         <q-expansion-item
         class="shadow-1 overflow-hidden"
         style="border-radius: 30px"
         default-opened
-        icon="explore"
+        icon="local_hospital"
         header-class="bg-green-7 text-white"
         expand-icon-class="text-white"
-        caption="Backend Health"
+        label="Backend Health"
       >
         <q-card>
           <q-card-section>
@@ -55,10 +54,10 @@
           class="shadow-1 overflow-hidden"
           style="border-radius: 30px"
           default-opened
-          icon="explore"
+          icon="info"
           header-class="bg-green-7 text-white"
           expand-icon-class="text-white"
-          caption="Backend Info"
+          label="Backend Info"
         >
           <q-card>
             <q-card-section>
@@ -79,10 +78,10 @@
           class="shadow-1 overflow-hidden"
           style="border-radius: 30px"
           default-opened
-          icon="explore"
+          icon="poll"
           header-class="bg-green-7 text-white"
           expand-icon-class="text-white"
-          caption="Backend Metrics"
+          label="Backend Metrics"
         >
           <q-card>
             <q-card-section>
@@ -98,12 +97,13 @@
           </q-card>
         </q-expansion-item>
       </div>
-      <!--Experimenting-->
     </div>
   </q-page>
 </template>
 <script>
-const http = require('axios')
+import moment from 'moment'
+import netcheck from '../libs/netcheck-client'
+import prettyBytes from 'pretty-bytes'
 export default {
   name: 'Info',
   data () {
@@ -114,121 +114,109 @@ export default {
       metrics: []
     }
   },
-  mounted () {
-    this.getHealthStatus()
-    this.getInfo()
-    this.getCPULoadAverage()
-    this.getHttpServerRequests()
-    this.getActiveDbConnections()
-    this.getUptime()
+  async mounted () {
+    await this.getHealthStatus()
+    await this.getInfo()
+    await this.getCPULoadAverage()
+    await this.getHttpServerRequests()
+    await this.getActiveDbConnections()
+    await this.getUptime()
   },
   methods: {
-    getHealthStatus () {
-      return http.get('/api/v1/actuator/health')
-        .then(resp => {
-          this.healthData = [{
-            title: 'Backend Status',
-            value: resp.data.status
-          }, {
-            title: 'Database Status',
-            value: resp.data.components.db.status
-          }, {
-            title: 'Database Type',
-            value: resp.data.components.db.details.database
-          }, {
-            title: 'DiskSpace Status',
-            value: resp.data.components.diskSpace.status
-          }, {
-            title: 'Total DiskSpace',
-            value: resp.data.components.diskSpace.details.total
-          }, {
-            title: 'Free DiskSpace',
-            value: resp.data.components.diskSpace.details.free
-          }, {
-            title: 'DiskSpace Threshold',
-            value: resp.data.components.diskSpace.details.threshold
-          }, {
-            title: 'Ping',
-            value: resp.data.components.ping.status
-          }]
-        })
+    async getHealthStatus () {
+      const resp = await netcheck().health()
+      this.healthData = [{
+        title: 'Backend Status',
+        value: resp.data.status
+      }, {
+        title: 'Database Status',
+        value: resp.data.components.db.status
+      }, {
+        title: 'Database Type',
+        value: resp.data.components.db.details.database
+      }, {
+        title: 'DiskSpace Status',
+        value: resp.data.components.diskSpace.status
+      }, {
+        title: 'Total DiskSpace',
+        value: prettyBytes(resp.data.components.diskSpace.details.total)
+      }, {
+        title: 'Free DiskSpace',
+        value: prettyBytes(resp.data.components.diskSpace.details.free)
+      }, {
+        title: 'DiskSpace Threshold',
+        value: prettyBytes(resp.data.components.diskSpace.details.threshold)
+      }, {
+        title: 'Ping',
+        value: resp.data.components.ping.status
+      }]
     },
-    getInfo () {
-      return http.get('/api/v1/actuator/info')
-        .then(resp => {
-          this.infoData = [{
-            title: 'Backend app name',
-            value: resp.data.app.name
-          }, {
-            title: 'Description',
-            value: resp.data.app.description
-          }, {
-            title: 'Java vendor',
-            value: resp.data.java.vendor
-          }, {
-            title: 'Java version',
-            value: resp.data.java.version
-          }, {
-            title: 'VM Name',
-            value: resp.data.java['vm-name']
-          }, {
-            title: 'VM Version',
-            value: resp.data.java['vm-version']
-          }, {
-            title: 'Java Version Release Date',
-            value: resp.data.java['version-date']
-          }, {
-            title: 'OS Name',
-            value: resp.data.os.name
-          }, {
-            title: 'Backend App Build Time',
-            value: resp.data.build.time
-          }, {
-            title: 'Backend App Version',
-            value: resp.data.build.version
-          }]
-        })
+    async getInfo () {
+      const resp = await netcheck().info()
+      this.infoData = [{
+        title: 'Backend App Version',
+        value: resp.data.build.version
+      }, {
+        title: 'Backend app name',
+        value: resp.data.app.name
+      }, {
+        title: 'Description',
+        value: resp.data.app.description
+      }, {
+        title: 'Java vendor',
+        value: resp.data.java.vendor
+      }, {
+        title: 'Java version',
+        value: resp.data.java.version
+      }, {
+        title: 'VM Name',
+        value: resp.data.java['vm-name']
+      }, {
+        title: 'VM Version',
+        value: resp.data.java['vm-version']
+      }, {
+        title: 'Java Version Release Date',
+        value: moment(resp.data.java['version-date']).format('LL')
+      }, {
+        title: 'OS Name',
+        value: resp.data.os.name
+      }, {
+        title: 'Backend App Build Time',
+        value: moment(resp.data.build.time).format('LLL')
+      }]
     },
-    getCPULoadAverage () {
-      return http.get('/api/v1/actuator/metrics/system.load.average.1m')
-        .then(resp => {
-          this.metrics.push({
-            title: 'Average System Load (1m)',
-            description: resp.data.description,
-            value: resp.data.measurements[0].value
-          })
-        })
+    async getCPULoadAverage () {
+      const resp = await netcheck().metric({ metricType: 'system.load.average.1m' })
+      this.metrics.push({
+        title: 'Average System Load (1m)',
+        description: resp.data.description,
+        value: resp.data.measurements[0].value
+      })
     },
-    getHttpServerRequests () {
-      return http.get('/api/v1/actuator/metrics/http.server.requests')
-        .then(resp => {
-          resp.data.measurements.forEach(measurement => {
-            this.metrics.push({
-              title: `Backend Requests (${measurement.statistic.toLowerCase().replace('_', ' ')})`,
-              value: measurement.value
-            })
-          })
+    async getHttpServerRequests () {
+      const resp = await netcheck().metric({ metricType: 'http.server.requests' })
+      resp.data.measurements.forEach(measurement => {
+        this.metrics.push({
+          title: `Backend Requests (${measurement.statistic.toLowerCase().replace('_', ' ')})`,
+          value: measurement.value
         })
+      })
     },
-    getActiveDbConnections () {
-      return http.get('/api/v1/actuator/metrics/jdbc.connections.active')
-        .then(resp => {
-          this.metrics.push({
-            title: 'Active DB connections',
-            description: resp.data.description,
-            value: resp.data.measurements[0].value
-          })
-        })
+    async getActiveDbConnections () {
+      const resp = await netcheck().metric({ metricType: 'jdbc.connections.active' })
+      this.metrics.push({
+        title: 'Active DB connections',
+        description: resp.data.description,
+        value: resp.data.measurements[0].value
+      })
     },
-    getUptime () {
-      return http.get('/api/v1/actuator/metrics/process.uptime')
-        .then(resp => {
-          this.metrics.push({
-            title: `Uptime (${resp.data.baseUnit})`,
-            description: resp.data.description,
-            value: resp.data.measurements[0].value
-          })
-        })
+    async getUptime () {
+      const resp = await netcheck().metric({ metricType: 'process.uptime' })
+      this.metrics.push({
+        title: 'Uptime',
+        description: resp.data.description,
+        value: moment.duration(resp.data.measurements[0].value, resp.data.baseUnit).humanize()
+      })
     }
   }
 }
