@@ -59,10 +59,7 @@ export default {
     return {
       leftDrawerOpen: false,
       darkMode: false,
-      sse: {
-        eventSource: null,
-        eventListener: null
-      },
+      eventListener: null,
       navigationLinks: [
         {
           title: 'Domain Check Page',
@@ -108,7 +105,7 @@ export default {
       return `${type.toLowerCase()}://${hostname} is ${status}`
     }
 
-    const eventListener = (event) => {
+    const consumer = (event) => {
       const data = JSON.parse(event.data)
       this.$q.notify({
         type: generateType(data),
@@ -123,9 +120,8 @@ export default {
       })
     }
 
-    const eventSource = new EventSource('http://127.0.0.1:8080/api/v1/event')
-    eventSource.addEventListener('Notification', eventListener, false)
-    eventSource.onerror = (e) => {
+    const eventClient = this.$backend.events()
+    const errorHandler = (e) => {
       this.$q.notify({
         type: 'negative',
         message: 'Backend connection issue',
@@ -134,16 +130,13 @@ export default {
         timeout: 10000
       })
     }
-    this.sse = {
-      eventSource,
-      eventListener
-    }
+    eventClient.onError(errorHandler)
+    this.eventListener = eventClient.subscribe({ eventType: 'Notification', consumer })
   },
   async beforeDestroy () {
-    if (this.sse.eventSource) {
+    if (this.eventListener) {
       console.log('Closing sse connection')
-      this.sse.eventSource.removeEventListener('Notification', this.sse.eventListener, false)
-      this.sse.eventSource.close()
+      this.eventListener.unsubscribe()
     } else {
       console.log('No sse eventSource found.')
     }

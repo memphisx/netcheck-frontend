@@ -27,7 +27,6 @@
   </q-page>
 </template>
 <script>
-import netcheck from '../libs/netcheck-client'
 import moment from 'moment'
 import DomainCard from 'components/DomainCard'
 export default {
@@ -69,7 +68,7 @@ export default {
 
       this.loading = true
 
-      const resp = await netcheck().domains({ page: dbPage, size })
+      const resp = await this.$backend.domains({ page: dbPage, size })
       if (resp.success) {
         if (resp.data._embedded && resp.data._embedded.domains && resp.data._embedded.domains.length) {
           this.pagination = {

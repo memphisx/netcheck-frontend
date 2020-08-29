@@ -111,7 +111,6 @@
 
 <script>
 import LatestTests from 'components/LatestTests'
-import netcheck from '../libs/netcheck-client'
 import StateHistory from 'components/StateHistory'
 import Performance from 'components/Performance'
 import UptimeChecks from 'components/UptimeChecks'
@@ -124,15 +123,12 @@ export default {
       scheduledTasks: [],
       loading: true,
       checkFrequency: 10,
-      sse: {
-        eventSource: null,
-        eventListener: null
-      },
       cards: {
         HTTP: {},
         HTTPS: {}
       },
       tab: 'HTTP',
+      eventListener: null,
       httpInnerTab: 'performance',
       splitterModel: 5,
       protocolsToCheck: [
@@ -157,7 +153,7 @@ export default {
   methods: {
     async fetchDomainStatus () {
       console.log('Fetching Domain Status')
-      const resp = await netcheck().domainStatus({ domain: this.$route.params.domain })
+      const resp = await this.$backend.domainStatus({ domain: this.$route.params.domain })
       if (resp.success) {
         resp.data.lastChecks.httpChecks.forEach(check => {
           this.checkedOn = check.checkedOn
@@ -283,7 +279,7 @@ export default {
     },
     async fetchLastHourMetrics (protocol) {
       console.log(`Fetching last hour ${protocol} metrics`)
-      const resp = await netcheck().todaysDomainMetrics({ domain: this.$route.params.domain, protocol })
+      const resp = await this.$backend.todaysDomainMetrics({ domain: this.$route.params.domain, protocol })
       if (resp.success) {
         const metric = resp.data._embedded.metrics[0]
         const calculateUptimePercentage = () => {
@@ -399,41 +395,20 @@ export default {
     await load()
     this.loading = false
 
-    const eventListener = async (event) => {
+    const consumer = async (event) => {
       const data = JSON.parse(event.data)
       console.log(`Event received for ${data.domain}. Refreshing!`, data)
       await load()
     }
-    const eventSource = new EventSource('http://127.0.0.1:8080/api/v1/event')
-    eventSource.addEventListener(`DomainCheck_${this.$route.params.domain}`, eventListener, false)
-    eventSource.onerror = (e) => {
-      this.$q.notify({
-        type: 'negative',
-        message: 'Backend connection issue',
-        caption: e,
-        position: 'top-right',
-        timeout: 10000
-      })
-    }
-    const close = () => {
-      console.log('Removing the event listener')
-      eventSource.removeEventListener(`DomainCheck_${this.$route.params.domain}`, this.sse.eventListener, false)
-      console.log('Closing the event source')
-      eventSource.close()
-    }
-    this.sse = {
-      eventSource,
-      eventListener,
-      close
-    }
+    this.eventListener = this.$backend.events().subscribe({ eventType: `DomainCheck_${this.$route.params.domain}`, consumer })
   },
   async beforeDestroy () {
     await this.scheduledTasks.forEach((task) => {
       clearInterval(task)
     })
-    if (this.sse.close) {
+    if (this.eventListener) {
       console.log('Closing sse connection')
-      this.sse.close()
+      this.eventListener.unsubscribe()
     } else {
       console.log('No sse eventSource found!')
     }

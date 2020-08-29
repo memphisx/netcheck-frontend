@@ -126,7 +126,6 @@
 </template>
 <script type="text/javascript">
 import moment from 'moment'
-import netcheck from 'src/libs/netcheck-client'
 import PerformanceMiniCard from 'components/PerformanceMiniCard'
 export default {
   components: {
@@ -161,7 +160,7 @@ export default {
       return moment(dateTime).format('LLL')
     },
     async getDomainConfigAndLastChecks () {
-      const resp = await netcheck().domainStatus({ domain: this.row.domain })
+      const resp = await this.$backend.domainStatus({ domain: this.row.domain })
       const checks = []
       const statuses = []
       resp.data.lastChecks.httpChecks.forEach(httpCheck => {

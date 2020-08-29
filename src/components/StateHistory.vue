@@ -25,7 +25,6 @@
 </template>
 <script type="text/javascript">
 import moment from 'moment'
-import netcheck from '../libs/netcheck-client'
 export default {
   props: ['domain', 'protocol'],
   data () {
@@ -57,7 +56,7 @@ export default {
       const dbPage = page - 1
 
       this.loading = true
-      const resp = await netcheck().domainStates({
+      const resp = await this.$backend.domainStates({
         domain: this.domain,
         protocol: this.protocol,
         size,

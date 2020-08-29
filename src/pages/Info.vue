@@ -102,7 +102,6 @@
 </template>
 <script>
 import moment from 'moment'
-import netcheck from '../libs/netcheck-client'
 import prettyBytes from 'pretty-bytes'
 export default {
   name: 'Info',
@@ -124,7 +123,7 @@ export default {
   },
   methods: {
     async getHealthStatus () {
-      const resp = await netcheck().health()
+      const resp = await this.$backend.health()
       this.healthData = [{
         title: 'Backend Status',
         value: resp.data.status
@@ -152,7 +151,7 @@ export default {
       }]
     },
     async getInfo () {
-      const resp = await netcheck().info()
+      const resp = await this.$backend.info()
       this.infoData = [{
         title: 'Backend App Version',
         value: resp.data.build.version
@@ -186,7 +185,7 @@ export default {
       }]
     },
     async getCPULoadAverage () {
-      const resp = await netcheck().metric({ metricType: 'system.load.average.1m' })
+      const resp = await this.$backend.metric({ metricType: 'system.load.average.1m' })
       this.metrics.push({
         title: 'Average System Load (1m)',
         description: resp.data.description,
@@ -194,7 +193,7 @@ export default {
       })
     },
     async getHttpServerRequests () {
-      const resp = await netcheck().metric({ metricType: 'http.server.requests' })
+      const resp = await this.$backend.metric({ metricType: 'http.server.requests' })
       resp.data.measurements.forEach(measurement => {
         this.metrics.push({
           title: `Backend Requests (${measurement.statistic.toLowerCase().replace('_', ' ')})`,
@@ -203,7 +202,7 @@ export default {
       })
     },
     async getActiveDbConnections () {
-      const resp = await netcheck().metric({ metricType: 'jdbc.connections.active' })
+      const resp = await this.$backend.metric({ metricType: 'jdbc.connections.active' })
       this.metrics.push({
         title: 'Active DB connections',
         description: resp.data.description,
@@ -211,7 +210,7 @@ export default {
       })
     },
     async getUptime () {
-      const resp = await netcheck().metric({ metricType: 'process.uptime' })
+      const resp = await this.$backend.metric({ metricType: 'process.uptime' })
       this.metrics.push({
         title: 'Uptime',
         description: resp.data.description,
