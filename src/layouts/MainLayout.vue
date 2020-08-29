@@ -87,59 +87,6 @@ export default {
       this.$q.dark.toggle()
       this.darkMode = this.$q.dark.isActive
     }
-  },
-  async created () {
-    const generateType = ({ type, status }) => {
-      if (type === 'CERTIFICATE') {
-        return 'info'
-      } else if (status && status === 'UP') {
-        return 'positive'
-      }
-      return 'negative'
-    }
-
-    const generateMessage = ({ type, status, hostname }) => {
-      if (type === 'CERTIFICATE') {
-        return `${hostname} certificates changed`
-      }
-      return `${type.toLowerCase()}://${hostname} is ${status}`
-    }
-
-    const consumer = (event) => {
-      const data = JSON.parse(event.data)
-      this.$q.notify({
-        type: generateType(data),
-        message: generateMessage(data),
-        actions: [
-          { label: 'Go to monitoring page', handler: () => this.$router.push(`/domains/${data.hostname}`) },
-          { label: 'Dismiss', color: 'white' }
-        ],
-        caption: data.message,
-        position: 'top-right',
-        timeout: 10000
-      })
-    }
-
-    const eventClient = this.$backend.events()
-    const errorHandler = (e) => {
-      this.$q.notify({
-        type: 'negative',
-        message: 'Backend connection issue',
-        caption: e,
-        position: 'top-right',
-        timeout: 10000
-      })
-    }
-    eventClient.onError(errorHandler)
-    this.eventListener = eventClient.subscribe({ eventType: 'Notification', consumer })
-  },
-  async beforeDestroy () {
-    if (this.eventListener) {
-      console.log('Closing sse connection')
-      this.eventListener.unsubscribe()
-    } else {
-      console.log('No sse eventSource found.')
-    }
   }
 }
 </script>

@@ -31,7 +31,6 @@ export default {
   methods: {
     submit () {
       const domain = this.domainName
-      console.log(domain)
       this.$router.push(`/check/${domain}`)
     }
   }

@@ -152,7 +152,6 @@ export default {
   },
   methods: {
     async fetchDomainStatus () {
-      console.log('Fetching Domain Status')
       const resp = await this.$backend.domainStatus({ domain: this.$route.params.domain })
       if (resp.success) {
         resp.data.lastChecks.httpChecks.forEach(check => {
@@ -278,7 +277,6 @@ export default {
       }
     },
     async fetchLastHourMetrics (protocol) {
-      console.log(`Fetching last hour ${protocol} metrics`)
       const resp = await this.$backend.todaysDomainMetrics({ domain: this.$route.params.domain, protocol })
       if (resp.success) {
         const metric = resp.data._embedded.metrics[0]
@@ -395,11 +393,7 @@ export default {
     await load()
     this.loading = false
 
-    const consumer = async (event) => {
-      const data = JSON.parse(event.data)
-      console.log(`Event received for ${data.domain}. Refreshing!`, data)
-      await load()
-    }
+    const consumer = async () => await load()
     this.eventListener = this.$backend.events().subscribe({ eventType: `DomainCheck_${this.$route.params.domain}`, consumer })
   },
   async beforeDestroy () {
@@ -407,10 +401,7 @@ export default {
       clearInterval(task)
     })
     if (this.eventListener) {
-      console.log('Closing sse connection')
       this.eventListener.unsubscribe()
-    } else {
-      console.log('No sse eventSource found!')
     }
   }
 }

@@ -22,7 +22,6 @@ const handleGetRequest = async url => {
       status: resp.status
     }
   }).catch(err => {
-    console.error(err)
     return {
       error: err,
       data: err.response.data,
