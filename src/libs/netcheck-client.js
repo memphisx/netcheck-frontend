@@ -51,7 +51,13 @@ export default ({ baseUrl = '', withEventSource = false } = {}) => {
     es = new EventSource(`${baseUrl}/events`)
   }
   return {
-    domains: async ({ page, size, showLastChecks = false }) => handleGetRequest(`${baseUrl}/api/v1/domains?page=${page}&size=${size}&showLastChecks=${showLastChecks}`),
+    domains: async ({ page, size, showLastChecks = false, filter, sortBy = 'createdAt', descending = true }) => {
+      let additionalProps = ''
+      if (filter !== '') {
+        additionalProps = additionalProps + `&filter=${filter}`
+      }
+      return handleGetRequest(`${baseUrl}/api/v1/domains?page=${page}&size=${size}&sortBy=${sortBy}&desc=${descending}&showLastChecks=${showLastChecks}${additionalProps}`)
+    },
     domainStatus: async ({ domain }) => handleGetRequest(`${baseUrl}/api/v1/domains/${domain}`),
     domainHistory: async ({ domain, page, size }) => handleGetRequest(`${baseUrl}/api/v1/domains/${domain}/history?size=${size}&page=${page}`),
     domainStates: async ({ domain, protocol, page, size }) => handleGetRequest(`${baseUrl}/api/v1/domains/${domain}/states?protocol=${protocol}&size=${size}&page=${page}`),

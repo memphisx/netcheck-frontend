@@ -220,7 +220,7 @@ export default {
                   value: moment(check.checkedOn).format('LLL')
                 },
                 {
-                  title: 'Next check will be triggered on',
+                  title: 'Next check is expected on',
                   value: moment(check.checkedOn).add(this.checkFrequency, 'minutes').format('LLL')
                 }
               ]
