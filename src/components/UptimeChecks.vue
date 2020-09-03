@@ -18,7 +18,6 @@
   </div>
 </template>
 <script type="text/javascript">
-import netcheck from '../libs/netcheck-client'
 import moment from 'moment'
 import VueApexCharts from 'vue-apexcharts'
 export default {
@@ -104,7 +103,7 @@ export default {
       const dbPage = page - 1
 
       this.loading = true
-      const resp = await netcheck().domainMetrics({
+      const resp = await this.$backend.domainMetrics({
         domain: this.domain,
         protocol: this.protocol,
         period: this.period,

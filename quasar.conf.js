@@ -19,7 +19,7 @@ module.exports = function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/cli-documentation/boot-files
     boot: [
-
+      'backend'
     ],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -75,7 +75,8 @@ module.exports = function (/* ctx */) {
         // proxy all requests starting with /api to jsonplaceholder
         '/api': {
           target: 'http://127.0.0.1:8080',
-          changeOrigin: true
+          changeOrigin: true,
+          compress: false
         },
         '/docs': {
           target: 'http://127.0.0.1:8080',
@@ -114,7 +115,8 @@ module.exports = function (/* ctx */) {
 
       // Quasar plugins
       plugins: [
-        'LoadingBar'
+        'LoadingBar',
+        'Notify'
       ],
       config: {
         loadingBar: { /* look at QUASARCONFOPTIONS from the API card (bottom of page) */ }

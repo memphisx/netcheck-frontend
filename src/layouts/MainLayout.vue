@@ -41,14 +41,13 @@
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <router-view :key="$route.path" />
     </q-page-container>
   </q-layout>
 </template>
 
 <script>
 import NavigationLink from 'components/Navigation'
-
 export default {
   name: 'MainLayout',
 
@@ -60,6 +59,7 @@ export default {
     return {
       leftDrawerOpen: false,
       darkMode: false,
+      eventListener: null,
       navigationLinks: [
         {
           title: 'Domain Check Page',

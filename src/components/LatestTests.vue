@@ -29,7 +29,6 @@
 <script type="text/javascript">
 import VueApexCharts from 'vue-apexcharts'
 import moment from 'moment'
-import netcheck from '../libs/netcheck-client'
 export default {
   props: ['domain', 'protocol'],
   components: {
@@ -78,7 +77,7 @@ export default {
       const dbPage = page - 1
 
       this.loading = true
-      const resp = await netcheck().domainHistory({ domain: this.domain, page: dbPage, size })
+      const resp = await this.$backend.domainHistory({ domain: this.domain, page: dbPage, size })
       if (resp.success) {
         if (resp.data._embedded && resp.data._embedded.domainChecks) {
           this.pagination = {

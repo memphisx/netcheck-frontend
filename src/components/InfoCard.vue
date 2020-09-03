@@ -69,7 +69,6 @@
   </div>
 </template>
 <script type="text/javascript">
-import netcheck from '../libs/netcheck-client'
 import moment from 'moment'
 export default {
   props: ['overline', 'monitored'],
@@ -78,11 +77,11 @@ export default {
       return moment(dateTime).format('LLL')
     },
     async scheduleDomain () {
-      const resp = await netcheck().scheduleDomain({ domain: this.$route.params.domain })
+      const resp = await this.$backend.scheduleDomain({ domain: this.$route.params.domain })
       this.scheduledSuccessfully = resp.success
     },
     async getDomainConfigAndLastChecks () {
-      const resp = await netcheck().domainStatus({ domain: this.$route.params.domain })
+      const resp = await this.$backend.domainStatus({ domain: this.$route.params.domain })
       if (resp.success) {
         this.scheduledSuccessfully = true
         this.domainConfig = {

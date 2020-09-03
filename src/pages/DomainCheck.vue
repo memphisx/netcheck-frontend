@@ -44,7 +44,6 @@
 
 <script>
 import ProtocolCheck from 'components/ProtocolCheck'
-import netcheck from '../libs/netcheck-client'
 import InfoCard from 'components/InfoCard'
 export default {
   name: 'DomainStatus',
@@ -71,7 +70,7 @@ export default {
   },
   methods: {
     async fetchDomainStatus () {
-      const resp = await netcheck().check({ domain: this.$route.params.domain })
+      const resp = await this.$backend.check({ domain: this.$route.params.domain })
       if (resp.success) {
         this.domainDetails = resp.data
       }

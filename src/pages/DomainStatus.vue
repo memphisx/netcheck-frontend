@@ -111,7 +111,6 @@
 
 <script>
 import LatestTests from 'components/LatestTests'
-import netcheck from '../libs/netcheck-client'
 import StateHistory from 'components/StateHistory'
 import Performance from 'components/Performance'
 import UptimeChecks from 'components/UptimeChecks'
@@ -129,6 +128,7 @@ export default {
         HTTPS: {}
       },
       tab: 'HTTP',
+      eventListener: null,
       httpInnerTab: 'performance',
       splitterModel: 5,
       protocolsToCheck: [
@@ -151,27 +151,8 @@ export default {
     Performance
   },
   methods: {
-    calculateNextCheck () {
-      return moment(this.checkedOn).add(this.checkFrequency, 'minutes').add(1, 'seconds')
-    },
-    calculateVeryNextCheck () {
-      return moment(this.checkedOn).add(this.checkFrequency * 2, 'minutes').add(1, 'seconds')
-    },
-    calculateNextCheckInSeconds () {
-      const now = moment(Date.now())
-      const nextCheck = moment(this.calculateNextCheck())
-      const diff = nextCheck.diff(now)
-      return moment.duration(diff).asSeconds()
-    },
-    calculateVeryNextCheckInSeconds () {
-      const now = moment(Date.now())
-      const nextCheck = moment(this.calculateVeryNextCheck())
-      const diff = nextCheck.diff(now)
-      return moment.duration(diff).asSeconds()
-    },
     async fetchDomainStatus () {
-      console.log('Fetching Domain Status')
-      const resp = await netcheck().domainStatus({ domain: this.$route.params.domain })
+      const resp = await this.$backend.domainStatus({ domain: this.$route.params.domain })
       if (resp.success) {
         resp.data.lastChecks.httpChecks.forEach(check => {
           this.checkedOn = check.checkedOn
@@ -239,7 +220,7 @@ export default {
                   value: moment(check.checkedOn).format('LLL')
                 },
                 {
-                  title: 'Next check will be triggered on',
+                  title: 'Next check is expected on',
                   value: moment(check.checkedOn).add(this.checkFrequency, 'minutes').format('LLL')
                 }
               ]
@@ -296,8 +277,7 @@ export default {
       }
     },
     async fetchLastHourMetrics (protocol) {
-      console.log('Fetching Last Hour Metrics')
-      const resp = await netcheck().todaysDomainMetrics({ domain: this.$route.params.domain, protocol })
+      const resp = await this.$backend.todaysDomainMetrics({ domain: this.$route.params.domain, protocol })
       if (resp.success) {
         const metric = resp.data._embedded.metrics[0]
         const calculateUptimePercentage = () => {
@@ -376,35 +356,6 @@ export default {
           }
         }
       }
-    },
-    async pollNewData (scope) {
-      let updatedOnTime = false
-      let backendError = false
-      let retries = 0
-      while (!updatedOnTime && (retries < 3)) {
-        console.log('Refreshing Data')
-        console.log(`Check ${retries + 1}`)
-        await scope.fetchDomainStatus()
-        for (const protocol of scope.protocolsToCheck) {
-          await scope.fetchLastHourMetrics(protocol)
-        }
-        const duration = scope.calculateNextCheckInSeconds()
-        updatedOnTime = duration > 0
-        backendError = scope.calculateVeryNextCheckInSeconds() < 0
-        console.log('Duration until next check', duration)
-        console.log('2 checks should have happened by now?', backendError)
-        if (backendError) {
-          console.warn('No update for a really long time.')
-          break
-        } else if (!updatedOnTime) {
-          console.log('Waiting for 2 seconds until next retry')
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          retries++
-        } else {
-          console.log('Updated as expected on time')
-        }
-      }
-      return updatedOnTime && (retries < 3)
     }
   },
   computed: {
@@ -432,26 +383,26 @@ export default {
     ) {
       this.httpInnerTab = this.$router.currentRoute.query.details
     }
-    this.loading = true
-    const result = await this.pollNewData(this)
-    this.loading = false
-    if (result === true) {
-      const nextRefreshInSeconds = this.calculateNextCheckInSeconds()
-      console.log(`Data will refresh in ${nextRefreshInSeconds} seconds`)
-      await new Promise(resolve => setTimeout(resolve, nextRefreshInSeconds * 1000))
-      const self = this
-      await this.pollNewData(self)
-      console.log('Data refreshed')
-      console.log('Setting up scheduled refreshes')
-      this.scheduledTasks.push(setInterval(async () => this.pollNewData(self), this.checkFrequency * 60 * 1000))
-    } else {
-      console.log('Something went wrong with the backend scheduler - Skipping scheduled frontend updates')
+    const load = async () => {
+      await this.fetchDomainStatus()
+      for (const protocol of this.protocolsToCheck) {
+        await this.fetchLastHourMetrics(protocol)
+      }
     }
+    this.loading = true
+    await load()
+    this.loading = false
+
+    const consumer = async () => await load()
+    this.eventListener = this.$backend.events().subscribe({ eventType: `DomainCheck_${this.$route.params.domain}`, consumer })
   },
   async beforeDestroy () {
     await this.scheduledTasks.forEach((task) => {
       clearInterval(task)
     })
+    if (this.eventListener) {
+      this.eventListener.unsubscribe()
+    }
   }
 }
 </script>
