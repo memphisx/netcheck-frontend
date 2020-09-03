@@ -1,5 +1,6 @@
 import axios from 'axios'
 let es
+
 const eventSourceHandler = eventSource => ({
   close: () => eventSource.close(),
   onError: (errorHandler) => {
@@ -14,6 +15,7 @@ const eventSourceHandler = eventSource => ({
     }
   }
 })
+
 const handleGetRequest = async url => {
   return axios.get(url).then(resp => {
     return {
@@ -30,6 +32,7 @@ const handleGetRequest = async url => {
     }
   })
 }
+
 const handlePutRequest = async url => {
   return axios.put(url).then(resp => {
     return {
@@ -46,6 +49,7 @@ const handlePutRequest = async url => {
     }
   })
 }
+
 export default ({ baseUrl = '', withEventSource = false } = {}) => {
   if (withEventSource) {
     es = new EventSource(`${baseUrl}/events`)
