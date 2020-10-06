@@ -372,16 +372,18 @@ export default {
     }
   },
   async created () {
-    if (this.$router.currentRoute.query.protocol && (this.$router.currentRoute.query.protocol === 'HTTP' || this.$router.currentRoute.query.protocol === 'HTTPS')) {
-      this.tab = this.$router.currentRoute.query.protocol
+    const protocol = this.$router.currentRoute.query.protocol
+    const details = this.$router.currentRoute.query.details
+    if (protocol && (protocol === 'HTTP' || protocol === 'HTTPS')) {
+      this.tab = protocol
     }
-    if (this.$router.currentRoute.query.details && (
-      this.$router.currentRoute.query.details === 'performance' ||
-      this.$router.currentRoute.query.details === 'uptimeChecks' ||
-      this.$router.currentRoute.query.details === 'states' ||
-      this.$router.currentRoute.query.details === 'latestChecks')
+    if (details && (
+      details === 'performance' ||
+      details === 'uptimeChecks' ||
+      details === 'states' ||
+      details === 'latestChecks')
     ) {
-      this.httpInnerTab = this.$router.currentRoute.query.details
+      this.httpInnerTab = details
     }
     const load = async () => {
       await this.fetchDomainStatus()

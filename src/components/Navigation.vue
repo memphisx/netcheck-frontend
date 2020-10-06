@@ -2,7 +2,7 @@
   <q-item
     clickable
     tag="a"
-    @click="$router.push(link)"
+    @click="($route.path !== link) ? $router.push(link) : undefined"
   >
     <q-item-section
       v-if="icon"

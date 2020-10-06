@@ -12,11 +12,22 @@
         />
 
         <q-toolbar-title>
-          NetCheck
+          {{ pageTitle }}
         </q-toolbar-title>
 
-        <div>
-          <q-toggle @input="this.toggleDarkMode" v-model="darkMode" icon="bedtime"/>
+        <div v-if="domainView">
+          <q-btn flat round dense icon="settings" @click="$router.push(`/domains/${$route.params.domain}/config`)">
+            <q-tooltip anchor="center left" self="center right">
+              Domain settings page
+            </q-tooltip>
+          </q-btn>
+        </div>
+        <div v-if="domainConfigView">
+          <q-btn flat round dense icon="poll" @click="$router.push(`/domains/${$route.params.domain}`)">
+            <q-tooltip anchor="center left" self="center right">
+              Monitoring page
+            </q-tooltip>
+          </q-btn>
         </div>
       </q-toolbar>
     </q-header>
@@ -30,7 +41,7 @@
           header
           class="text-grey-8"
         >
-          Navigation Links
+          <q-img alt="NetCheck logo" src="~assets/netcheck-logo.png" style="width: 100%" />
         </q-item-label>
         <NavigationLink
           v-for="link in navigationLinks"
@@ -50,7 +61,7 @@
 import NavigationLink from 'components/Navigation'
 export default {
   name: 'MainLayout',
-
+  props: ['pageTitle', 'domainView', 'domainConfigView'],
   components: {
     NavigationLink: NavigationLink
   },
@@ -58,8 +69,6 @@ export default {
   data () {
     return {
       leftDrawerOpen: false,
-      darkMode: false,
-      eventListener: null,
       navigationLinks: [
         {
           title: 'Domain Check Page',
@@ -69,23 +78,29 @@ export default {
         },
         {
           title: 'Monitored Domains',
-          caption: 'Check all domains currently monitored',
-          icon: 'view_list',
+          caption: 'List of all monitored domains',
+          icon: 'dashboard',
           link: '/domains'
         },
         {
+          title: 'Monitored Servers',
+          caption: 'List of all monitored servers',
+          icon: 'view_list',
+          link: '/servers'
+        },
+        {
+          title: 'Settings',
+          caption: 'UI configuration',
+          icon: 'settings',
+          link: '/settings'
+        },
+        {
           title: 'Info',
-          caption: 'About WebCheck',
+          caption: 'About NetCheck',
           icon: 'info',
           link: '/info'
         }
       ]
-    }
-  },
-  methods: {
-    toggleDarkMode () {
-      this.$q.dark.toggle()
-      this.darkMode = this.$q.dark.isActive
     }
   }
 }
