@@ -2,7 +2,7 @@
   <div class="q-pa-sm" v-if="!removed">
     <q-expansion-item
       class="shadow-1 overflow-hidden round-corners-max-width"
-      v-model="expanded"
+      v-model="isExpanded"
       :default-opened="true"
       :icon="icon"
       :header-class="headerClass"
@@ -176,6 +176,7 @@ export default {
       removeButtonLabel: `YES, REMOVE ${this.data.row.domain}`,
       message: `Are you sure you want to stop monitoring ${this.data.row.domain} and remove all associated metrics and checks?`,
       removeCard: false,
+      isExpanded: this.expanded,
       loading: false,
       selected: false,
       cols: [],
@@ -289,6 +290,11 @@ export default {
     this.cols = this.data.cols
     await this.getDomainConfigAndLastChecks()
     this.loading = false
+  },
+  watch: {
+    expanded (newValue) {
+      this.isExpanded = newValue
+    }
   }
 }
 </script>
