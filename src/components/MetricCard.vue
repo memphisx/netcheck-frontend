@@ -15,7 +15,7 @@
       <q-card-section class="row q-gutter-md">
         <q-icon :name="generateIcon(metric)" class="generic-card-icon" />
         <div class="vertical">
-          <div class="generic-card-caption" v-if="metric.label && metric.label!==''">{{ metric.label }}</div>
+          <div class="generic-card-caption" v-if="metric.label">{{ metric.label }}</div>
           <div class="generic-card-text" v-if="metric.extendedType && metric.extendedType == 'DATETIME'">
             {{ metric.value }}
           </div>

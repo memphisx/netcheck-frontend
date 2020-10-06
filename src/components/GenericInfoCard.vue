@@ -4,7 +4,7 @@
       <q-card-section class="row q-gutter-md">
         <q-icon :name="icon" class="generic-card-icon" />
         <div class="vertical">
-          <div class="generic-card-caption" v-if="description && description!==''">{{ description }}</div>
+          <div class="generic-card-caption" v-if="description">{{ description }}</div>
           <div class="generic-card-text" v-if="type === 'countUp'">
             <ICountUp
               :endVal="Number(value)"

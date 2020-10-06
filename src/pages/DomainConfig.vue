@@ -69,7 +69,7 @@
                 <q-item-section side>
                   <q-btn flat dense color="primary" icon="edit">
                     <q-popup-edit v-model="entry.value" @save="updateHeader(entry.header, entry.value)">
-                      <template v-slot="{ initialValue, value, emitValue, validate, set, cancel }">
+                      <template v-slot="{ initialValue, value, emitValue, set, cancel }">
                         <q-input
                           autofocus
                           dense
