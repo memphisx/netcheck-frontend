@@ -1,7 +1,7 @@
 <template>
-  <div class="q-pa-sm">
+  <div class="q-pa-sm" v-if="!removed">
     <q-expansion-item
-      class="shadow-1 overflow-hidden round-corners"
+      class="shadow-1 overflow-hidden round-corners-max-width"
       v-model="expanded"
       :default-opened="true"
       :icon="icon"
@@ -15,6 +15,7 @@
         <div>
           <PerformanceMiniCard
             :domain="row.domain"
+            v-if="this.$settings.isMonitoredDomainsGraphsEnabled()"
           />
           <q-separator />
           <q-expansion-item
@@ -114,14 +115,49 @@
             </q-card>
           </q-expansion-item>
         </div>
-        <q-card-actions>
-          <q-btn flat color="primary" class="round-corners" label="Go To Monitoring Page" v-on:click.native="gotoMonitoring" dense/>
+        <q-card-actions align="center">
+          <q-btn round flat icon="settings" v-on:click.native="gotoSettings">
+            <q-tooltip anchor="top middle" self="center middle">
+              Go to domain settings page
+            </q-tooltip>
+          </q-btn>
+          <q-btn flat class="round-corners" icon="view_module" v-on:click.native="gotoMonitoring">
+            <q-tooltip anchor="top middle" self="center middle">
+              Go to monitoring page
+            </q-tooltip>
+          </q-btn>
+          <q-btn round flat color="red" icon="delete" v-on:click.native="removeDomainTrigger">
+            <q-tooltip anchor="top middle" self="center middle">
+              Remove Domain
+            </q-tooltip>
+          </q-btn>
         </q-card-actions>
       </q-card>
       <q-inner-loading :showing="loading">
         <q-spinner-gears size="50px" color="primary" />
       </q-inner-loading>
     </q-expansion-item>
+    <q-dialog v-model="removeCard" v-if="removeCard">
+      <q-card class="round-corners">
+        <q-item class="bg-red">
+          <q-item-section avatar>
+            <q-avatar icon="delete" text-color="white" />
+          </q-item-section>
+          <q-space />
+          <q-item-section>
+            <q-item-label>Remove {{ row.domain }} ?</q-item-label>
+          </q-item-section>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-item>
+        <q-card-section class="round-corners" align="center">
+          {{ message }}
+        </q-card-section>
+        <q-card-actions align="center">
+          <q-btn flat color="red" class="round-corners" :label="removeButtonLabel" :disable="removeDisabled" v-on:click.native="removeDomain"/>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 <script type="text/javascript">
@@ -135,6 +171,11 @@ export default {
   data () {
     return {
       row: {},
+      removed: false,
+      removeDisabled: false,
+      removeButtonLabel: `YES, REMOVE ${this.data.row.domain}`,
+      message: `Are you sure you want to stop monitoring ${this.data.row.domain} and remove all associated metrics and checks?`,
+      removeCard: false,
       loading: false,
       selected: false,
       cols: [],
@@ -203,6 +244,42 @@ export default {
     },
     gotoMonitoring () {
       this.$router.push(`/domains/${this.row.domain}`)
+    },
+    gotoSettings () {
+      this.$router.push(`/domains/${this.row.domain}/config`)
+    },
+    removeDomainTrigger () {
+      this.removeCard = true
+    },
+    async removeDomain () {
+      this.loading = true
+      this.message = `Removing ${this.row.domain}. This may take a while depending on the amount of associated data.`
+      this.removeButtonLabel = 'Please wait!'
+      this.removeDisabled = true
+      const resp = await this.$backend.removeDomain({ domain: this.row.domain })
+      if (!resp.success) {
+        this.message = 'Something went wrong'
+        this.$q.notify({
+          message: `Something went wrong while trying to remove ${this.row.domain}`,
+          type: 'negative',
+          position: 'top-right',
+          html: false,
+          timeout: 10000,
+          closeBtn: true
+        })
+      } else {
+        this.$q.notify({
+          message: `${this.row.domain} was removed successfully`,
+          type: 'positive',
+          position: 'top-right',
+          html: false,
+          timeout: 10000,
+          closeBtn: true
+        })
+        this.removeCard = false
+        this.removed = true
+      }
+      this.loading = false
     }
   },
   async created () {
@@ -216,8 +293,12 @@ export default {
 }
 </script>
 <style lang="sass" scoped>
-.round-corners
+.round-corners-max-width
   width: 100%
+  max-width: 350px
+  border-radius: 30px
+.round-corners
+  align-content: center
   max-width: 350px
   border-radius: 30px
 </style>

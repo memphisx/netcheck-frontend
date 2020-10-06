@@ -41,7 +41,7 @@ export default {
       chart: {
         options: {
           tooltip: {
-            theme: 'dark'
+            theme: this.$q.dark.isActive ? 'dark' : 'light'
           },
           chart: {
             id: 'vuechart-metrics-http'

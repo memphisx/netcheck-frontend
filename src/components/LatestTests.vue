@@ -56,6 +56,9 @@ export default {
       data: [],
       chart: {
         options: {
+          tooltip: {
+            theme: this.$q.dark.isActive ? 'dark' : 'light'
+          },
           chart: {
             id: 'vuechart-http'
           },

@@ -13,7 +13,6 @@
       hide-header
     >
       <template v-slot:top>
-        <div class="col-3 q-table__title">Monitored Domains</div>
         <q-space />
         <q-input rounded outlined dense debounce="300" v-model="filter" placeholder="Search">
           <template v-slot:append>
@@ -108,10 +107,15 @@ export default {
       columns: [
         { name: 'domain', align: 'left', label: 'Domain', field: 'domain', sortable: true },
         { name: 'createdAt', label: 'Date Added', field: 'createdAt', sortable: true },
-        { name: 'frequency', label: 'Check Frequency (minutes)', field: 'frequency', sortable: false }
+        { name: 'endpoint', label: 'Endpoint', field: 'endpoint', sortable: false },
+        { name: 'timeout', label: 'Request timeout', field: 'timeout', sortable: false },
+        { name: 'frequency', label: 'Check Frequency', field: 'frequency', sortable: false }
       ],
       data: []
     }
+  },
+  created () {
+    this.expanded = this.$settings.isMonitoredDomainsExpanded()
   },
   async mounted () {
     await this.refreshData()
@@ -138,7 +142,9 @@ export default {
           resp.data._embedded.domains.forEach(domain => {
             domains.push({
               domain: domain.domain,
-              frequency: domain.checkFrequencyMinutes,
+              frequency: `Every ${domain.checkFrequencyMinutes} minutes`,
+              endpoint: domain.endpoint,
+              timeout: `After ${domain.timeoutMs / 1000} seconds`,
               createdAt: moment(domain.dateAdded).format('LLLL')
             })
           })
