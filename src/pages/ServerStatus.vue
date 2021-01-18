@@ -50,9 +50,11 @@ export default {
       }
     },
     getDefinition (fieldName) {
-      return (this.definitions && this.definitions[fieldName]) ? {
-        ...this.definitions[fieldName]
-      } : {}
+      return (this.definitions && this.definitions[fieldName])
+        ? {
+            ...this.definitions[fieldName]
+          }
+        : {}
     },
     async getServerMetrics () {
       const resp = await this.$backend.serverMetrics({ serverId: this.$route.params.serverId })
