@@ -10,9 +10,11 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - name: Install Quasar globally
+        run: npm install -g @quasar/cli
       - name: Install dependencies
         run: yarn install
       - name: Run tests
@@ -27,7 +29,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Use Node.js 12.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v1
       - name: Install dependencies
         run: yarn install
       - name: Install Quasar globally
@@ -58,7 +60,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v2
       - name: Use Node.js 12.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v1
       - name: Install dependencies
         run: yarn install
       - name: Install Quasar globally
