@@ -40,11 +40,12 @@ export default {
       data: [],
       chart: {
         options: {
-          tooltip: {
-            theme: this.$q.dark.isActive ? 'dark' : 'light'
+          theme: {
+            mode: this.$q.dark.isActive ? 'dark' : 'light'
           },
           chart: {
-            id: 'vuechart-metrics-http'
+            id: 'vuechart-metrics-http',
+            background: this.$q.dark.isActive ? '#1D1D1D' : undefined
           },
           xaxis: {
             categories: []
